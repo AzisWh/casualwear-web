@@ -78,7 +78,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 
             <div class="card card-primary card-outline">
               <div class="card-header">
-                <h5 class="m-0">Halo Admin</h5>
+                <h5 class="m-0">Admin Panel</h5>
               </div>
               <div class="card-body">
                {{-- content --}}

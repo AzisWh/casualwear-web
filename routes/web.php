@@ -1,7 +1,9 @@
 <?php
 
 use App\Http\Controllers\Admin\AdminDashboardController;
+use App\Http\Controllers\Admin\KategoriController;
 use App\Http\Controllers\AuthController;
+use App\Models\KategoriModel;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -34,7 +36,12 @@ Route::middleware('auth')->group(function () {
     });
     //admin
     Route::middleware('role:1')->group(function () {
-        Route::get('/admin-dashboard',[AdminDashboardController::class, 'index'])->name('admin.home'); 
+        Route::get('/admin-dashboard',[AdminDashboardController::class, 'index'])->name('admin.home');
+        // kategori
+        Route::get('/admin-kategori', [KategoriController::class, 'index'])->name('admin.kategori'); 
+        Route::post('/admin-kategori', [KategoriController::class, 'addKategori'])->name('admin.kategori.store');
+        Route::patch('/admin-kategori/{kategori}', [KategoriController::class, 'editKategori'])->name('admin.kategori.update');
+        Route::delete('/admin-kategori/{kategori}', [KategoriController::class, 'delKategori'])->name('admin.kategori.destroy');
     });
 
    

@@ -9,7 +9,7 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.6.9/dist/sweetalert2.min.css" rel="stylesheet">
 </head>
-<body class="bg-dark">
+<body class="bg-secondary">
     @include('sweetalert::alert')
     <div class="container py-5 ">
         @yield('content')
