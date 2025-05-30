@@ -17,10 +17,16 @@ class SepatuModel extends Model
         'image_sepatu',
         'deskripsi',
         'stok',
+        'harga_sepatu',
     ];
 
     public function kategori()
     {
         return $this->belongsTo(KategoriModel::class,'id_kat');
+    }
+
+    public function carts()
+    {
+        return $this->hasMany(CartModel::class, 'sepatu_id');
     }
 }

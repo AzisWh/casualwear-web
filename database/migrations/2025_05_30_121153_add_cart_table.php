@@ -11,14 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('sepatu', function (Blueprint $table) {
+        Schema::create('user_cart', function (Blueprint $table) {
             $table->id();
-            $table->string('title')->unique();
-            $table->string('size');
-            $table->foreignId('id_kat') ->constrained('kategori_sepatu') ->onDelete('cascade');
-            $table->string('image_sepatu')->nullable();
-            $table->text('deskripsi');
-            $table->integer('stok');
+            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
+            $table->foreignId('sepatu_id')->constrained('sepatu')->onDelete('cascade');
+            $table->integer('jumlah')->default(1);
+            $table->bigInteger('total_harga');
             $table->timestamps();
         });
     }
@@ -28,6 +26,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('sepatu');
+        Schema::dropIfExists('user_cart');
     }
 };

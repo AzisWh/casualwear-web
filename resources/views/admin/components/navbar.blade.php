@@ -26,9 +26,9 @@
               </a>
             </li>
             <li class="nav-item">
-              <a href="#" class="nav-link">
+              <a href="{{route('admin.sepatu')}}" class="nav-link">
                 <i class="far fa-circle nav-icon"></i>
-                <p>Transaksi</p>
+                <p>List Sepatu</p>
               </a>
             </li>
           </ul>
@@ -36,7 +36,6 @@
 
         <li class="nav-item">
           <form action="{{route('logout.action')}}" method="POST">
-          {{-- <form action="#" method=""> --}}
               @csrf
               <button class="btn btn-danger btn-block" type="submit">Logout</button>
           </form>

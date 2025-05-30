@@ -38,7 +38,7 @@ class AuthController extends Controller
         if (Auth::attempt($credentials)) {
             Alert::success('Hore!', 'Login berhasil');
             if(Auth::user()->role_type==0){
-                // return redirect()->route('user.home');
+                return redirect()->route('user.home');
             }
             else if(Auth::user()->role_type==1){
                 return redirect()->route('admin.home');
@@ -97,6 +97,6 @@ class AuthController extends Controller
     {
         Auth::logout();
         Alert::success('Sukses', 'Berhasil Logout!');
-        return redirect()->route('login');
+        return redirect()->route('user.home');
     }
 }
