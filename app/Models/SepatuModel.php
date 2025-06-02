@@ -29,4 +29,9 @@ class SepatuModel extends Model
     {
         return $this->hasMany(CartModel::class, 'sepatu_id');
     }
+
+    public function transaction()
+    {
+        return $this->hasMany(Transaction::class, 'sepatu_id');
+    }
 }

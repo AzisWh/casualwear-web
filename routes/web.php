@@ -6,6 +6,7 @@ use App\Http\Controllers\Admin\SepatuController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\User\CartController;
 use App\Http\Controllers\User\DashboardController;
+use App\Http\Controllers\User\UserCheckoutController;
 use App\Models\KategoriModel;
 use Illuminate\Support\Facades\Route;
 
@@ -40,6 +41,10 @@ Route::middleware('auth')->group(function () {
         Route::post('/cart/add/{sepatu}', [CartController::class, 'addToCart'])->name('cart.add');
         Route::delete('/cart/delete/{cart}', [CartController::class, 'removeCart'])->name('cart.delete');
         Route::get('/cart', [CartController::class, 'viewCart'])->name('cart.view');
+
+        // co
+        Route::get('/checkout', [UserCheckoutController::class, 'index'])->name('user.checkout.index');
+        Route::post('/checkout/{sepatu_id}', [UserCheckoutController::class, 'store'])->name('user.checkout.store');
     });
     //admin
     Route::middleware('role:1')->group(function () {

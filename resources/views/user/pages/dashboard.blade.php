@@ -29,9 +29,9 @@
         </div>
       </div>
     </form>
-  </div>
-  
-  <section class="py-3">
+</div>
+
+<section class="py-3">
     <div class="container">
       <div class="row gx-4 gx-lg-5 row-cols-2 row-cols-md-3 row-cols-xl-4 justify-content-center">
         @forelse ($dataSepatu as $sepatu)
@@ -48,18 +48,48 @@
                   <p>Harga: Rp {{ number_format($sepatu->harga_sepatu, 0, ',', '.') }}</p>
                   <p>Stok: <span class="text-danger">{{ $sepatu->stok }}</span></p>
                 </div>
-                <div class="d-flex flex-column gap-4 ">
-                    <form action="#" method="GET" >
-                      <button type="submit" class="btn btn-primary w-100">Checkout</button>
-                    </form>
-                    
+                <div class="d-flex flex-column gap-4">
+                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#checkoutModal{{ $sepatu->id }}">
+                      Checkout
+                    </button>
                     <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addCartModal{{ $sepatu->id }}">
                       Add to Cart
                     </button>
-                </div>  
+                </div>
               </div>
             </div>
           </div>
+          <!-- Modal Checkout -->
+          <div class="modal fade" id="checkoutModal{{ $sepatu->id }}" tabindex="-1" aria-labelledby="checkoutModalLabel{{ $sepatu->id }}" aria-hidden="true">
+            <div class="modal-dialog">
+              <form action="{{ route('user.checkout.store', $sepatu->id) }}" method="POST">
+                @csrf
+                <div class="modal-content">
+                  <div class="modal-header">
+                    <h5 class="modal-title" id="checkoutModalLabel{{ $sepatu->id }}">Checkout - {{ $sepatu->title }}</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                  </div>
+                  <div class="modal-body">
+                    <p><strong>{{ $sepatu->title }}</strong></p>
+                    <p>Harga per item: Rp {{ number_format($sepatu->harga_sepatu, 0, ',', '.') }}</p>
+                    <p>Stok tersedia: {{ $sepatu->stok }}</p>
+                    <div class="mb-3">
+                      <label for="jumlah" class="form-label">Jumlah:</label>
+                      <input type="number" name="jumlah" class="form-control jumlahInput" data-harga="{{ $sepatu->harga_sepatu }}" min="1" max="{{ $sepatu->stok }}" required>
+                    </div>
+                    <div class="mb-3">
+                      <label>Total Harga:</label>
+                      <p class="fw-bold totalHargaText">Rp 0</p>
+                    </div>
+                  </div>
+                  <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary">Checkout Sekarang</button>
+                  </div>
+                </div>
+              </form>
+            </div>
+          </div>
+          <!-- Modal Add to Cart -->
           <div class="modal fade" id="addCartModal{{ $sepatu->id }}" tabindex="-1" aria-labelledby="addCartModalLabel{{ $sepatu->id }}" aria-hidden="true">
             <div class="modal-dialog">
               <form action="{{ route('cart.add', $sepatu->id) }}" method="POST">
@@ -95,9 +125,7 @@
       </div>
     </div>
 </section>
-  
 
-  
 <script>
     document.querySelectorAll('.jumlahInput').forEach(function(input) {
       input.addEventListener('input', function () {
@@ -111,6 +139,5 @@
         }
       });
     });
-  </script>
+</script>
 @endsection
-
