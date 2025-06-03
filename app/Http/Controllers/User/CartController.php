@@ -11,6 +11,11 @@ use RealRashid\SweetAlert\Facades\Alert;
 
 class CartController extends Controller
 {
+    public function index()
+    {
+        $cartItems = CartModel::where('user_id', Auth::id())->with('sepatu')->get();
+        return view('user.pages.cart', compact('cartItems'));
+    }
     
     public function addToCart(Request $request, SepatuModel $sepatu)
     {
@@ -22,8 +27,6 @@ class CartController extends Controller
         $total = $jumlah * $sepatu->harga_sepatu;
 
         try {
-            $sepatu->stok -= $jumlah;
-            $sepatu->save();
 
             CartModel::create([
                 'user_id' => Auth::id(),
@@ -44,9 +47,6 @@ class CartController extends Controller
     public function removeCart(CartModel $cart)
     {
         try {
-            $sepatu = $cart->sepatu;
-            $sepatu->stok += $cart->jumlah;
-            $sepatu->save();
 
             $cart->delete();
 

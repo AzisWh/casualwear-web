@@ -3,6 +3,7 @@
 use App\Http\Controllers\Admin\AdminDashboardController;
 use App\Http\Controllers\Admin\KategoriController;
 use App\Http\Controllers\Admin\SepatuController;
+use App\Http\Controllers\Admin\VoucherController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\User\CartController;
 use App\Http\Controllers\User\DashboardController;
@@ -36,15 +37,21 @@ Route::post('/logout-action', [AuthController::class, 'logout'])->name('logout.a
 Route::get('/', [DashboardController::class, 'index'])->name('user.home');
 
 
+
 Route::middleware('auth')->group(function () {
     Route::middleware('role:0')->group(function () {
+        // cart
         Route::post('/cart/add/{sepatu}', [CartController::class, 'addToCart'])->name('cart.add');
         Route::delete('/cart/delete/{cart}', [CartController::class, 'removeCart'])->name('cart.delete');
         Route::get('/cart', [CartController::class, 'viewCart'])->name('cart.view');
+        Route::get('/cart-page', [CartController::class, 'index'])->name('user.cart.index');
 
         // co
-        Route::get('/checkout', [UserCheckoutController::class, 'index'])->name('user.checkout.index');
-        Route::post('/checkout/{sepatu_id}', [UserCheckoutController::class, 'store'])->name('user.checkout.store');
+        // Route::get('/checkout', [UserCheckoutController::class, 'index'])->name('user.checkout.index');
+        Route::get('/checkout', [UserCheckoutController::class, 'index'])
+            ->name('user.checkout.index');
+        Route::post('/checkout/{sepatu_id?}', [UserCheckoutController::class, 'store'])->name('user.checkout.store');
+        Route::patch('/checkout/{transactionId}/expire', [UserCheckoutController::class, 'expire'])->name('user.checkout.expire');
     });
     //admin
     Route::middleware('role:1')->group(function () {
@@ -59,6 +66,11 @@ Route::middleware('auth')->group(function () {
         Route::post('/admin-sepatu', [SepatuController::class, 'addSepatu'])->name('admin.sepatu.store');
         Route::patch('/admin-sepatu/{sepatu}', [SepatuController::class, 'editSepatu'])->name('admin.sepatu.update');
         Route::delete('/admin-sepatu/{sepatu}', [SepatuController::class, 'delSepatu'])->name('admin.sepatu.destroy');
+        // voucher
+        Route::get('/admin-voucher', [VoucherController::class, 'index'])->name('admin.voucher');
+        Route::post('/admin-voucher', [VoucherController::class, 'addVoucher'])->name('admin.voucher.store');
+        Route::patch('/admin-voucher/{voucher}', [VoucherController::class, 'editVoucher'])->name('admin.voucher.update');
+        Route::delete('/admin-voucher/{voucher}', [VoucherController::class, 'delVoucher'])->name('admin.voucher.destroy');
     });
 
    

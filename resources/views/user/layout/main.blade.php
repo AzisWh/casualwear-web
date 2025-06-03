@@ -16,6 +16,8 @@
     <!-- Core theme CSS (includes Bootstrap)-->
     <link href="{{ asset('usertemplate/css/styles.css') }}" rel="stylesheet" />
     <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.6.9/dist/sweetalert2.min.css" rel="stylesheet">
+    {{-- <meta http-equiv="Content-Security-Policy" content="script-src 'self'" /> --}}
+    {{-- <meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-eval';"> --}}
   </head>
   <body>
     @include('sweetalert::alert')
@@ -40,5 +42,8 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.6.9/dist/sweetalert2.all.min.js"></script>
     <!-- Core theme JS-->
     <script src="{{ asset('usertemplate/js/scripts.js') }}"></script>
+    {{-- midtrans --}}
+    @yield('script')
+    {{-- <script src="https://app.sandbox.midtrans.com/snap/snap.js" data-client-key="{{ config('services.midtrans.client_key') }}"></script> --}}
   </body>
 </html>

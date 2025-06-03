@@ -11,14 +11,20 @@ class Transaction extends Model
 
     protected $table = 'transaction';
 
+    
     protected $fillable = [
         'user_id',
         'sepatu_id',
         'jumlah',
         'total_harga',
         'status',
+        'expired_at',
+        'snap_token',
+        'order_id',
     ];
-
+    
+    protected $dates = ['expired_at', 'created_at', 'updated_at'];
+    
     public function user()
     {
         return $this->belongsTo(User::class, 'user_id');

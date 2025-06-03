@@ -26,18 +26,34 @@
         @forelse ($transactions as $transaction)
             <div class="col-md-6 mb-4">
                 <div class="card">
+                    <img src="{{ asset('storage/' . $transaction->sepatu->image_sepatu) }}" class="card-img-top" alt="{{ $transaction->sepatu->title }}" style="height: 200px; object-fit: cover;">
                     <div class="card-body">
                         <h5 class="card-title">{{ $transaction->sepatu->title }}</h5>
                         <p>Jumlah: {{ $transaction->jumlah }}</p>
                         <p>Total Harga: Rp {{ number_format($transaction->total_harga, 0, ',', '.') }}</p>
                         <p>Status: {{ ucfirst($transaction->status) }}</p>
                         @if ($transaction->status == 'pending' && $transaction->expired_at)
-                            <p>Batas Waktu Pembayaran: {{ $transaction->expired_at->format('d M Y H:i') }}</p>
-                            @if ($transaction->expired_at->isPast())
+                            <?php
+                                $expiredDate = \Carbon\Carbon::parse($transaction->expired_at, 'Asia/Jakarta');
+                                $now = \Carbon\Carbon::now('Asia/Jakarta');
+                            ?>
+                            <p>Batas Waktu Pembayaran: {{ $expiredDate->format('d M Y H:i') }} WIB</p>
+                            @if ($expiredDate->lt($now))
                                 <p class="text-danger">Transaksi telah kadaluarsa.</p>
+                                <form action="{{ route('user.checkout.expire', $transaction->id) }}" method="POST" style="display:inline;">
+                                    @csrf
+                                    @method('PATCH')
+                                    <button type="submit" class="btn btn-warning btn-sm">Perbarui Status</button>
+                                </form>
+                            @else
+                                @if ($transaction->snap_token)
+                                    <button class="btn btn-primary pay-now" data-snap-token="{{ $transaction->snap_token }}" data-transaction-id="{{ $transaction->id }}">Bayar Sekarang</button>
+                                @else
+                                    <p class="text-warning">Snap token tidak tersedia. Hubungi admin.</p>
+                                @endif
                             @endif
                         @endif
-                        <p>Tanggal: {{ $transaction->created_at->format('d M Y H:i') }}</p>
+                        <p>Tanggal: {{ \Carbon\Carbon::parse($transaction->created_at, 'Asia/Jakarta')->format('d M Y H:i') }} WIB</p>
                     </div>
                 </div>
             </div>
@@ -46,4 +62,79 @@
         @endforelse
     </div>
 </div>
+@endsection
+
+@section('script')
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        document.querySelectorAll('.pay-now').forEach(function(button) {
+            button.addEventListener('click', function() {
+                var snapToken = this.getAttribute('data-snap-token');
+                var transactionId = this.getAttribute('data-transaction-id');
+                if (!snapToken) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'Snap token tidak ditemukan. Silakan coba lagi atau hubungi admin.',
+                        confirmButtonText: 'OK'
+                    });
+                    return;
+                }
+
+                Swal.fire({
+                    title: 'Memproses Pembayaran',
+                    text: 'Silakan tunggu...',
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+
+                snap.pay(snapToken, {
+                    onSuccess: function(result) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Sukses',
+                            text: 'Pembayaran berhasil!',
+                            confirmButtonText: 'OK'
+                        }).then(() => {
+                            window.location.href = '{{ route('user.checkout.index') }}';
+                        });
+                    },
+                    onPending: function(result) {
+                        Swal.fire({
+                            icon: 'info',
+                            title: 'Tertunda',
+                            text: 'Pembayaran tertunda. Silakan selesaikan pembayaran.',
+                            confirmButtonText: 'OK'
+                        }).then(() => {
+                            window.location.href = '{{ route('user.checkout.index') }}';
+                        });
+                    },
+                    onError: function(result) {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Gagal',
+                            text: 'Pembayaran gagal! Silakan coba lagi.',
+                            confirmButtonText: 'OK'
+                        }).then(() => {
+                            window.location.href = '{{ route('user.checkout.index') }}';
+                        });
+                    },
+                    onClose: function() {
+                        Swal.fire({
+                            icon: 'warning',
+                            title: 'Dibatalkan',
+                            text: 'Anda menutup popup pembayaran.',
+                            confirmButtonText: 'OK'
+                        }).then(() => {
+                            window.location.href = '{{ route('user.checkout.index') }}';
+                        });
+                    }
+                });
+            });
+        });
+    });
+</script>
+<script src="https://app.sandbox.midtrans.com/snap/snap.js" data-client-key="{{ env('MIDTRANS_CLIENT_KEY') }}"></script>
 @endsection

@@ -62,7 +62,7 @@
                 @endforeach
                 <li><hr class="dropdown-divider"></li>
                 <li class="text-center px-3 mb-2">
-                  <a href="{{ route('cart.view') }}" class="btn btn-sm btn-primary w-100">Lihat Keranjang</a>
+                  <a href="{{route('user.cart.index')}}" class="btn btn-sm btn-primary w-100">Lihat Keranjang</a>
                 </li>
               </ul>
               @else
