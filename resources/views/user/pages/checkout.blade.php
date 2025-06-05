@@ -31,6 +31,9 @@
                         <h5 class="card-title">{{ $transaction->sepatu->title }}</h5>
                         <p>Jumlah: {{ $transaction->jumlah }}</p>
                         <p>Total Harga: Rp {{ number_format($transaction->total_harga, 0, ',', '.') }}</p>
+                        @if ($transaction->shipping_cost)
+                            <p>Ongkos Kirim: Rp {{ number_format($transaction->shipping_cost, 0, ',', '.') }} ({{ strtoupper($transaction->courier) }} - {{ $transaction->service }})</p>
+                        @endif
                         <p>Status: {{ ucfirst($transaction->status) }}</p>
                         @if ($transaction->status == 'pending' && $transaction->expired_at)
                             <?php
@@ -47,13 +50,20 @@
                                 </form>
                             @else
                                 @if ($transaction->snap_token)
-                                    <button class="btn btn-primary pay-now" data-snap-token="{{ $transaction->snap_token }}" data-transaction-id="{{ $transaction->id }}">Bayar Sekarang</button>
+                                    <?php
+                                        $isShippingDataComplete = $transaction->origin && $transaction->destination && $transaction->courier && $transaction->shipping_cost && $transaction->service;
+                                    ?>
+                                    <button class="btn btn-primary pay-now" data-snap-token="{{ $transaction->snap_token }}" data-transaction-id="{{ $transaction->id }}" @if(!$isShippingDataComplete) disabled @endif>Bayar Sekarang</button>
+                                    @if(!$isShippingDataComplete)
+                                        <p class="text-warning mt-2">Silakan lengkapi data pengiriman terlebih dahulu di halaman detail transaksi.</p>
+                                    @endif
                                 @else
                                     <p class="text-warning">Snap token tidak tersedia. Hubungi admin.</p>
                                 @endif
                             @endif
                         @endif
                         <p>Tanggal: {{ \Carbon\Carbon::parse($transaction->created_at, 'Asia/Jakarta')->format('d M Y H:i') }} WIB</p>
+                        <a href="{{ route('user.checkout.detail', $transaction->id) }}" class="btn btn-info btn-sm">Lihat Detail</a>
                     </div>
                 </div>
             </div>
@@ -110,7 +120,7 @@
                         }).then(() => {
                             window.location.href = '{{ route('user.checkout.index') }}';
                         });
-                    },
+kyl                    },
                     onError: function(result) {
                         Swal.fire({
                             icon: 'error',

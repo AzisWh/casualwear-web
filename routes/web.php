@@ -48,10 +48,13 @@ Route::middleware('auth')->group(function () {
 
         // co
         // Route::get('/checkout', [UserCheckoutController::class, 'index'])->name('user.checkout.index');
-        Route::get('/checkout', [UserCheckoutController::class, 'index'])
-            ->name('user.checkout.index');
+        Route::get('/checkout', [UserCheckoutController::class, 'index'])->name('user.checkout.index');
         Route::post('/checkout/{sepatu_id?}', [UserCheckoutController::class, 'store'])->name('user.checkout.store');
-        Route::patch('/checkout/{transactionId}/expire', [UserCheckoutController::class, 'expire'])->name('user.checkout.expire');
+        Route::get('/checkout/detail/{id}', [UserCheckoutController::class, 'detail'])->name('user.checkout.detail');
+        Route::get('/cities/{province_id}', [UserCheckoutController::class, 'getCities'])->name('user.checkout.cities');
+        Route::post('/checkout/calculate/{id}', [UserCheckoutController::class, 'calculateShipping'])->name('user.checkout.calculate');
+        Route::post('/checkout/save/{id}', [UserCheckoutController::class, 'saveShipping'])->name('user.checkout.save');
+        Route::patch('/checkout/expire/{transactionId}', [UserCheckoutController::class, 'expire'])->name('user.checkout.expire');
     });
     //admin
     Route::middleware('role:1')->group(function () {

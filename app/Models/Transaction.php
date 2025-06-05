@@ -10,7 +10,6 @@ class Transaction extends Model
     use HasFactory;
 
     protected $table = 'transaction';
-
     
     protected $fillable = [
         'user_id',
@@ -21,6 +20,11 @@ class Transaction extends Model
         'expired_at',
         'snap_token',
         'order_id',
+        'origin',
+        'destination',
+        'courier',
+        'shipping_cost',
+        'service',
     ];
     
     protected $dates = ['expired_at', 'created_at', 'updated_at'];

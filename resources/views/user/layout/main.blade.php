@@ -28,7 +28,7 @@
     @yield('header')
 
     {{-- Content --}}
-    <main>
+    <main class="py-2">
       @yield('content')
     </main>
 
