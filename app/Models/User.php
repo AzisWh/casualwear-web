@@ -24,7 +24,11 @@ class User extends Authenticatable
         'password',
         'role_type',
         'no_hp',
-        'gender'
+        'gender',
+        'alamat_tinggal',
+        'asal_kota',
+        'asal_provinsi',
+        'kodepos',
     ];
 
     /**

@@ -8,6 +8,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\User\CartController;
 use App\Http\Controllers\User\DashboardController;
 use App\Http\Controllers\User\UserCheckoutController;
+use App\Http\Controllers\User\UserDataController;
 use App\Models\KategoriModel;
 use Illuminate\Support\Facades\Route;
 
@@ -40,6 +41,8 @@ Route::get('/', [DashboardController::class, 'index'])->name('user.home');
 
 Route::middleware('auth')->group(function () {
     Route::middleware('role:0')->group(function () {
+        // profile
+        Route::put('/profile', [UserDataController::class, 'update'])->name('user.profile.update');
         // cart
         Route::post('/cart/add/{sepatu}', [CartController::class, 'addToCart'])->name('cart.add');
         Route::delete('/cart/delete/{cart}', [CartController::class, 'removeCart'])->name('cart.delete');
