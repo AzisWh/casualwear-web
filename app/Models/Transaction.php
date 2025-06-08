@@ -40,4 +40,9 @@ class Transaction extends Model
     {
         return $this->belongsTo(SepatuModel::class, 'sepatu_id');
     }
+
+    public function voucher()
+    {
+        return $this->belongsTo(VoucherModel::class, 'voucher_id', 'id');
+    }
 }

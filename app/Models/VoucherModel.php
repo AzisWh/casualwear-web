@@ -27,4 +27,9 @@ class VoucherModel extends Model
         'end_date' => 'datetime',
         'is_active' => 'boolean',
     ];
+
+    public function transactions()
+    {
+        return $this->hasMany(Transaction::class, 'voucher_id', 'id');
+    }
 }

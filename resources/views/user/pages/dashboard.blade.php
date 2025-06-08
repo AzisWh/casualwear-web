@@ -133,25 +133,63 @@
 </section>
 
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Check for flash messages on page load
-        @if (session('success'))
-            Swal.fire({
-                icon: 'success',
-                title: 'Berhasil',
-                text: '{{ session('success') }}',
-                confirmButtonText: 'OK'
-            });
-        @endif
-        @if (session('error'))
-            Swal.fire({
-                icon: 'error',
-                title: 'Gagal',
-                text: '{{ session('error') }}',
-                confirmButtonText: 'OK'
-            });
-        @endif
+    function applyVoucher(sepatuId) {
+        const voucherCode = document.getElementById('voucher_code_' + sepatuId).value;
+        const totalText = document.getElementById('totalHargaText_' + sepatuId);
+        const voucherMessage = document.getElementById('voucher_message_' + sepatuId);
+        const jumlahInput = document.querySelector('#checkoutModal' + sepatuId + ' .jumlahInput');
+        const harga = parseInt(jumlahInput.dataset.harga);
+        const jumlah = parseInt(jumlahInput.value);
 
+        if (!voucherCode) {
+            voucherMessage.style.display = 'block';
+            voucherMessage.className = 'text-danger mt-2';
+            voucherMessage.innerText = 'Kode voucher tidak boleh kosong.';
+            voucherMessage.dataset.discount = '0';
+            totalText.innerText = 'Rp ' + (harga * jumlah).toLocaleString('id-ID');
+            return;
+        }
+
+        // Use AJAX to call the checkVoucher endpoint
+        fetch('{{ route('user.check-voucher') }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            },
+            body: JSON.stringify({ code: voucherCode })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                voucherMessage.style.display = 'block';
+                voucherMessage.className = 'text-success mt-2';
+                voucherMessage.innerText = data.message;
+                voucherMessage.dataset.discount = data.discount_type === 'percentage' ? data.discount_value : (data.discount_value / (harga * jumlah) * 100);
+                let total = harga * jumlah;
+                if (voucherMessage.dataset.discount > 0) {
+                    total = total * (1 - voucherMessage.dataset.discount / 100);
+                }
+                totalText.innerText = 'Rp ' + Math.round(total).toLocaleString('id-ID');
+            } else {
+                voucherMessage.style.display = 'block';
+                voucherMessage.className = 'text-danger mt-2';
+                voucherMessage.innerText = data.message;
+                voucherMessage.dataset.discount = '0';
+                totalText.innerText = 'Rp ' + (harga * jumlah).toLocaleString('id-ID');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            voucherMessage.style.display = 'block';
+            voucherMessage.className = 'text-danger mt-2';
+            voucherMessage.innerText = 'Terjadi kesalahan saat memeriksa voucher.';
+            voucherMessage.dataset.discount = '0';
+            totalText.innerText = 'Rp ' + (harga * jumlah).toLocaleString('id-ID');
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
         document.querySelectorAll('.jumlahInput').forEach(function(input) {
             input.addEventListener('input', function () {
                 const harga = parseInt(this.dataset.harga);
@@ -162,13 +200,6 @@
                 const voucherMessage = document.getElementById('voucher_message_' + sepatuId);
                 if (voucherMessage && voucherMessage.dataset.discount) {
                     discount = parseFloat(voucherMessage.dataset.discount);
-                } else if ('{{ session('discount_value') }}' && '{{ session('discount_type') }}') {
-                    const discountValue = parseFloat('{{ session('discount_value') }}');
-                    discount = '{{ session('discount_type') }}' === 'percentage' ? discountValue : (discountValue / (harga * jumlah) * 100);
-                    voucherMessage.style.display = 'block';
-                    voucherMessage.className = 'text-success mt-2';
-                    voucherMessage.innerText = 'Voucher diterapkan! Diskon: {{ session('discount_type') }} === \'percentage\' ? {{ session('discount_value') }} + \'%\' : \'Rp \' + {{ session('discount_value') }}.toLocaleString(\'id-ID\')';
-                    voucherMessage.dataset.discount = discount;
                 }
                 if (!isNaN(jumlah)) {
                     let total = harga * jumlah;
@@ -181,40 +212,6 @@
                 }
             });
         });
-
-        function applyVoucher(sepatuId) {
-            const voucherCode = document.getElementById('voucher_code_' + sepatuId).value;
-            const totalText = document.getElementById('totalHargaText_' + sepatuId);
-            const voucherMessage = document.getElementById('voucher_message_' + sepatuId);
-            const jumlahInput = document.querySelector('#checkoutModal' + sepatuId + ' .jumlahInput');
-            const harga = parseInt(jumlahInput.dataset.harga);
-            const jumlah = parseInt(jumlahInput.value);
-
-            if (!voucherCode) {
-                voucherMessage.style.display = 'block';
-                voucherMessage.className = 'text-danger mt-2';
-                voucherMessage.innerText = 'Kode voucher tidak boleh kosong.';
-                voucherMessage.dataset.discount = '0';
-                totalText.innerText = 'Rp ' + (harga * jumlah).toLocaleString('id-ID');
-                return;
-            }
-
-            const form = document.createElement('form');
-            form.method = 'POST';
-            form.action = '{{ route('user.check-voucher') }}';
-            const token = document.createElement('input');
-            token.type = 'hidden';
-            token.name = '_token';
-            token.value = '{{ csrf_token() }}';
-            const code = document.createElement('input');
-            code.type = 'hidden';
-            code.name = 'code';
-            code.value = voucherCode;
-            form.appendChild(token);
-            form.appendChild(code);
-            document.body.appendChild(form);
-            form.submit();
-        }
     });
 </script>
 @endsection

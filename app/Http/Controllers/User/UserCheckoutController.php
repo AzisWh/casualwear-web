@@ -58,7 +58,7 @@ class UserCheckoutController extends Controller
 
             $total_harga = $sepatu->harga_sepatu * $request->jumlah;
             $discount = 0;
-            $voucher = null;
+            $voucher_id = null;
 
             if ($request->voucher_code) {
                 $voucher = VoucherModel::where('code', $request->voucher_code)
@@ -76,6 +76,7 @@ class UserCheckoutController extends Controller
                     }
                     $total_harga -= $discount;
                     $voucher->increment('used_count');
+                    $voucher_id = $voucher->id;
                 } else {
                     Alert::warning('Peringatan', 'Kode voucher tidak valid atau kadaluarsa.');
                 }
@@ -94,7 +95,7 @@ class UserCheckoutController extends Controller
                 'jumlah' => $request->jumlah,
                 'total_harga' => $total_harga,
                 'discount' => $discount,
-                'voucher_code' => $voucher ? $request->voucher_code : null,
+                'voucher_id' => $voucher_id,
                 'status' => 'pending',
                 'expired_at' => $expired_at,
             ]);
@@ -179,11 +180,14 @@ class UserCheckoutController extends Controller
             ->first();
 
         if ($voucher) {
-            Alert::success('Berhasil', 'Kode voucher ' . $request->code . ' diterapkan!');
-            return back()->with('discount_value', $voucher->discount_value)->with('discount_type', $voucher->discount_type);
+            return response()->json([
+                'success' => true,
+                'message' => 'Kode voucher ' . $request->code . ' diterapkan!',
+                'discount_value' => $voucher->discount_value,
+                'discount_type' => $voucher->discount_type
+            ]);
         }
-        Alert::error('Gagal', 'Kode voucher tidak valid atau kadaluarsa.');
-        return back();
+        return response()->json(['success' => false, 'message' => 'Kode voucher tidak valid atau kadaluarsa.']);
     }
 
     public function detail($id)
