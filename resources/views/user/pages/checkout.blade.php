@@ -34,6 +34,12 @@
                         @if ($transaction->shipping_cost)
                             <p>Ongkos Kirim: Rp {{ number_format($transaction->shipping_cost, 0, ',', '.') }} ({{ strtoupper($transaction->courier) }} - {{ $transaction->service }})</p>
                         @endif
+                        @if ($transaction->alamat)
+                            <p><strong>Alamat Pengiriman:</strong> {{ $transaction->alamat }}</p>
+                        @endif
+                        @if ($transaction->deskripsi_alamat)
+                            <p><strong>Deskripsi Alamat:</strong> {{ $transaction->deskripsi_alamat }}</p>
+                        @endif
                         <p>Status: {{ ucfirst($transaction->status) }}</p>
                         @if ($transaction->status == 'pending' && $transaction->expired_at)
                             <?php
@@ -120,7 +126,7 @@
                         }).then(() => {
                             window.location.href = '{{ route('user.checkout.index') }}';
                         });
-kyl                    },
+                    },
                     onError: function(result) {
                         Swal.fire({
                             icon: 'error',

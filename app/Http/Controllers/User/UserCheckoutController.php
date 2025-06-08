@@ -147,35 +147,6 @@ class UserCheckoutController extends Controller
         return response()->json($cities);
     }
 
-    // public function calculateShipping(Request $request, $id)
-    // {
-    //     $request->validate([
-    //         'destination' => 'required',
-    //         'courier' => 'required|in:jne,pos,tiki',
-    //     ]);
-
-    //     $transaction = Transaction::where('user_id', Auth::id())->findOrFail($id);
-
-    //     $origin = 152;
-    //     $weight = $request->jumlah * 1000; 
-
-    //     $response = Http::withHeaders([
-    //         'key' => env('RAJAONGKIR_API_KEY')
-    //     ])->post('https://api.rajaongkir.com/starter/cost', [
-    //         'origin' => $origin,
-    //         'destination' => $request->destination,
-    //         'weight' => $weight,
-    //         'courier' => $request->courier,
-    //     ]);
-
-    //     if ($response->successful()) {
-    //         $costs = $response->json()['rajaongkir']['results'][0]['costs'];
-    //         return response()->json($costs);
-    //     }
-
-    //     return response()->json(['error' => 'Failed to fetch shipping cost'], 500);
-    // }
-
     public function calculateShipping(Request $request, $id)
     {
         $request->validate([
@@ -227,6 +198,8 @@ class UserCheckoutController extends Controller
             'courier' => 'required',
             'shipping_cost' => 'required|numeric',
             'service' => 'required',
+            'alamat' => 'required|string',
+            'deskripsi_alamat' => 'nullable|string',
         ]);
 
         $transaction = Transaction::where('user_id', Auth::id())->findOrFail($id);
@@ -241,6 +214,8 @@ class UserCheckoutController extends Controller
             'shipping_cost' => $request->shipping_cost,
             'service' => $request->service,
             'total_harga' => $total_harga,
+            'alamat' => $request->alamat,
+            'deskripsi_alamat' => $request->deskripsi_alamat,
         ]);
 
         $transaction_details = [
@@ -294,162 +269,36 @@ class UserCheckoutController extends Controller
         return redirect()->route('user.checkout.index')->with('snapToken', $snapToken);
     }
 
+    public function updateAddress(Request $request, $id)
+    {
+        try{
+            $request->validate([
+                'destination_province' => 'sometimes|exists:provinces,province_id',
+                'destination' => 'sometimes|exists:cities,city_id',
+                'alamat' => 'sometimes|string',
+                'deskripsi_alamat' => 'nullable|string',
+            ]);
+    
+            $user = Auth::user();
+            $user->update([
+                'asal_provinsi_id' => $request->destination_province,
+                'asal_kota_id' => $request->destination,
+                'alamat_tinggal' => $request->alamat,
+                'deskripsi_alamat' => $request->deskripsi_alamat,
+            ]);
+    
+            Alert::success('Berhasil', 'Alamat profil berhasil diperbarui!');
+            return redirect()->back();
+        }catch(Exception $e) {
+            Log::error('Gagal memperbarui alamat pengiriman', [
+                'error' => $e->getMessage(),
+                'request' => $request->all(),
+            ]);
 
-    // public function store(Request $request, $sepatu_id = null)
-    // {
-    //     try {
-    //         // Checkout langsung (dengan sepatu_id)
-    //         if ($sepatu_id) {
-    //             $request->validate([
-    //                 'jumlah' => 'required|integer|min:1',
-    //             ]);
-
-    //             $sepatu = SepatuModel::findOrFail($sepatu_id);
-
-    //             if ($request->jumlah > $sepatu->stok) {
-    //                 return redirect()->back()->with('error', 'Jumlah melebihi stok yang tersedia.');
-    //             }
-
-    //             $total_harga = $sepatu->harga_sepatu * $request->jumlah;
-    //             $expired_at = Carbon::now('Asia/Jakarta')->addHours(24);
-
-    //             $transaction = Transaction::create([
-    //                 'user_id' => Auth::id(),
-    //                 'sepatu_id' => $sepatu->id,
-    //                 'jumlah' => $request->jumlah,
-    //                 'total_harga' => $total_harga,
-    //                 'status' => 'pending',
-    //                 'expired_at' => $expired_at,
-    //             ]);
-
-    //             $order_id = 'ORDER-' . $transaction->id . '-' . time();
-    //             $transaction->update(['order_id' => $order_id]);
-
-    //             $transaction_details = [
-    //                 'order_id' => $order_id,
-    //                 'gross_amount' => $total_harga,
-    //             ];
-
-    //             $item_details = [
-    //                 [
-    //                     'id' => $sepatu->id,
-    //                     'price' => $sepatu->harga_sepatu,
-    //                     'quantity' => $request->jumlah,
-    //                     'name' => $sepatu->title,
-    //                 ],
-    //             ];
-
-    //             $customer_details = [
-    //                 'first_name' => Auth::user()->nama_depan,
-    //                 'last_name' => Auth::user()->nama_belakang,
-    //                 'email' => Auth::user()->email,
-    //                 'phone' => Auth::user()->no_hp,
-    //             ];
-
-    //             $midtrans_params = [
-    //                 'transaction_details' => $transaction_details,
-    //                 'item_details' => $item_details,
-    //                 'customer_details' => $customer_details,
-    //                 'enabled_payments' => ['gopay', 'shopeepay', 'bank_transfer', 'qris'],
-    //                 'callbacks' => [
-    //                     'finish' => route('user.checkout.index'),
-    //                 ],
-    //                 'expiry' => [
-    //                     'start_time' => Carbon::now('Asia/Jakarta')->format('Y-m-d H:i:s O'),
-    //                     'duration' => 24,
-    //                     'unit' => 'hours',
-    //                 ],
-    //                 'custom_field1' => $transaction->id,
-    //             ];
-
-    //             $snapToken = Snap::getSnapToken($midtrans_params);
-    //             $transaction->update(['snap_token' => $snapToken]);
-
-    //             return redirect()->route('user.checkout.index')->with('snapToken', $snapToken);
-    //         }
-
-    //         // Checkout multi-item dari cart
-    //         $selectedItems = $request->input('selected_items', []);
-    //         if (empty($selectedItems)) {
-    //             return redirect()->back()->with('error', 'Pilih setidaknya satu item untuk checkout.');
-    //         }
-
-    //         $totalAmount = 0;
-    //         $items = [];
-    //         $cartItems = CartModel::whereIn('id', $selectedItems)->where('user_id', Auth::id())->with('sepatu')->get();
-
-    //         if ($cartItems->isEmpty()) {
-    //             return redirect()->back()->with('error', 'Item yang dipilih tidak valid.');
-    //         }
-
-    //         $transactions = [];
-    //         $order_id_base = 'ORDER-' . time();
-    //         foreach ($cartItems as $index => $cartItem) {
-    //             $sepatu = $cartItem->sepatu;
-    //             if ($cartItem->jumlah > $sepatu->stok) {
-    //                 return redirect()->back()->with('error', 'Jumlah ' . $sepatu->title . ' melebihi stok yang tersedia.');
-    //             }
-
-    //             $totalAmount += $cartItem->total_harga;
-    //             $items[] = [
-    //                 'id' => $sepatu->id,
-    //                 'price' => $sepatu->harga_sepatu,
-    //                 'quantity' => $cartItem->jumlah,
-    //                 'name' => $sepatu->title,
-    //             ];
-
-    //             $expired_at = Carbon::now('Asia/Jakarta')->addHours(24);
-    //             $transaction = Transaction::create([
-    //                 'user_id' => Auth::id(),
-    //                 'sepatu_id' => $sepatu->id,
-    //                 'jumlah' => $cartItem->jumlah,
-    //                 'total_harga' => $cartItem->total_harga,
-    //                 'status' => 'pending',
-    //                 'expired_at' => $expired_at,
-    //                 'order_id' => $order_id_base . '-' . ($index + 1),
-    //             ]);
-    //             $transactions[] = $transaction;
-    //         }
-
-    //         $transaction_details = [
-    //             'order_id' => $order_id_base,
-    //             'gross_amount' => $totalAmount,
-    //         ];
-
-    //         $customer_details = [
-    //             'first_name' => Auth::user()->nama_depan,
-    //             'last_name' => Auth::user()->nama_belakang,
-    //             'email' => Auth::user()->email,
-    //             'phone' => Auth::user()->no_hp,
-    //         ];
-
-    //         $midtrans_params = [
-    //             'transaction_details' => $transaction_details,
-    //             'item_details' => $items,
-    //             'customer_details' => $customer_details,
-    //             'enabled_payments' => ['gopay', 'shopeepay', 'bank_transfer', 'qris'],
-    //             'callbacks' => [
-    //                 'finish' => route('user.checkout.index'),
-    //             ],
-    //             'expiry' => [
-    //                 'start_time' => Carbon::now('Asia/Jakarta')->format('Y-m-d H:i:s O'),
-    //                 'duration' => 24,
-    //                 'unit' => 'hours',
-    //             ],
-    //             'custom_field1' => collect($transactions)->pluck('id')->implode(','),
-    //         ];
-
-    //         $snapToken = Snap::getSnapToken($midtrans_params);
-    //         $transactions[count($transactions) - 1]->update(['snap_token' => $snapToken]);
-
-    //         // Hapus item dari cart setelah transaksi berhasil dibuat
-    //         CartModel::whereIn('id', $selectedItems)->delete();
-
-    //         return redirect()->route('user.checkout.index')->with('snapToken', $snapToken);
-    //     } catch (\Exception $e) {
-    //         return redirect()->back()->with('error', 'Gagal melakukan checkout: ' . $e->getMessage());
-    //     }
-    // }
+            Alert::error('Error', 'Gagal memperbarui alamat pengiriman: ' . $e->getMessage());
+           return redirect()->back();
+        }
+    }
 
     public function notification(Request $request)
     {

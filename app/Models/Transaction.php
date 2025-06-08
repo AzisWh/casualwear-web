@@ -18,13 +18,15 @@ class Transaction extends Model
         'total_harga',
         'status',
         'expired_at',
-        'snap_token',
         'order_id',
+        'snap_token',
         'origin',
         'destination',
         'courier',
         'shipping_cost',
         'service',
+        'alamat',
+        'deskripsi_alamat',
     ];
     
     protected $dates = ['expired_at', 'created_at', 'updated_at'];

@@ -48,6 +48,8 @@ Route::middleware('auth')->group(function () {
         Route::delete('/cart/delete/{cart}', [CartController::class, 'removeCart'])->name('cart.delete');
         Route::get('/cart', [CartController::class, 'viewCart'])->name('cart.view');
         Route::get('/cart-page', [CartController::class, 'index'])->name('user.cart.index');
+        Route::post('/cart/checkout/{id}', [CartController::class, 'checkoutFromCart'])->name('user.cart.checkout');
+
 
         // co
         // Route::get('/checkout', [UserCheckoutController::class, 'index'])->name('user.checkout.index');
@@ -58,6 +60,7 @@ Route::middleware('auth')->group(function () {
         Route::post('/checkout/calculate/{id}', [UserCheckoutController::class, 'calculateShipping'])->name('user.checkout.calculate');
         Route::post('/checkout/save/{id}', [UserCheckoutController::class, 'saveShipping'])->name('user.checkout.save');
         Route::patch('/checkout/expire/{transactionId}', [UserCheckoutController::class, 'expire'])->name('user.checkout.expire');
+        Route::post('/checkout/{id}/update-address', [UserCheckoutController::class, 'updateAddress'])->name('user.checkout.updateAddress');
     });
     //admin
     Route::middleware('role:1')->group(function () {

@@ -18,6 +18,7 @@
     <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.6.9/dist/sweetalert2.min.css" rel="stylesheet">
     {{-- <meta http-equiv="Content-Security-Policy" content="script-src 'self'" /> --}}
     {{-- <meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-eval';"> --}}
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
   </head>
   <body>
     @include('sweetalert::alert')
@@ -141,8 +142,9 @@
     @include('user.components.footer')
 
     <!-- Bootstrap core JS-->
-    <script src="/lte/plugins/jquery/jquery.min.js"></script>
-    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    {{-- <script src="/lte/plugins/jquery/jquery.min.js"></script> --}}
+    {{-- <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script> --}}
+    
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.6.9/dist/sweetalert2.all.min.js"></script>
     <!-- Core theme JS-->

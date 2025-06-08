@@ -42,6 +42,8 @@
                 <?php
                     $expiredDate = \Carbon\Carbon::parse($transaction->expired_at, 'Asia/Jakarta');
                     $now = \Carbon\Carbon::now('Asia/Jakarta');
+                    $user = Auth::user();
+                    $isAddressComplete = $user->alamat_tinggal && $user->asal_kota && $user->asal_provinsi && $user->kodepos;
                 ?>
                 <p><strong>Batas Waktu Pembayaran:</strong> {{ $expiredDate->format('d M Y H:i') }} WIB</p>
                 @if ($expiredDate->lt($now))
@@ -52,26 +54,31 @@
                         <button type="submit" class="btn btn-warning btn-sm">Perbarui Status</button>
                     </form>
                 @else
-                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#shippingModal">Pilih Pengiriman</button>
+                    @if ($isAddressComplete)
+                        <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#editShippingModal">Edit Data Pengiriman</button>
+                    @else
+                        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addShippingModal">Pilih Pengiriman</button>
+                    @endif
                 @endif
             @endif
         </div>
     </div>
 </div>
 
-<!-- Modal Pengiriman -->
-<div class="modal fade" id="shippingModal" tabindex="-1" aria-labelledby="shippingModalLabel" aria-hidden="true">
+<!-- Modal for Adding New Shipping Address -->
+<div class="modal fade" id="addShippingModal" tabindex="-1" aria-labelledby="addShippingModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="shippingModalLabel">Pilih Detail Pengiriman</h5>
+                <h5 class="modal-title" id="addShippingModalLabel">Pilih Detail Pengiriman</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
-                <form id="shipping-form">
+                <form id="add-shipping-form" action="{{ route('user.checkout.updateAddress', $transaction->id) }}" method="POST">
+                    @csrf
                     <div class="mb-3">
-                        <label for="destination_province" class="form-label">Provinsi Tujuan</label>
-                        <select name="destination_province" id="destination_province" class="form-select" required>
+                        <label for="add_destination_province" class="form-label">Provinsi Tujuan</label>
+                        <select name="destination_province" id="add_destination_province" class="form-select" required>
                             <option value="">Pilih Provinsi</option>
                             @foreach ($provinces as $id => $name)
                                 <option value="{{ $id }}">{{ $name }}</option>
@@ -79,22 +86,89 @@
                         </select>
                     </div>
                     <div class="mb-3">
-                        <label for="destination" class="form-label">Kota Tujuan</label>
-                        <select name="destination" id="destination" class="form-select" required>
+                        <label for="add_destination" class="form-label">Kota Tujuan</label>
+                        <select name="destination" id="add_destination" class="form-select" required>
                             <option value="">Pilih Kota</option>
                         </select>
                     </div>
                     <div class="mb-3">
-                        <label for="courier" class="form-label">Kurir</label>
-                        <select name="courier" id="courier" class="form-select" required>
+                        <label for="add_courier" class="form-label">Kurir</label>
+                        <select name="courier" id="add_courier" class="form-select" required>
                             <option value="jne">JNE</option>
                             <option value="pos">POS</option>
                             <option value="tiki">TIKI</option>
                         </select>
                     </div>
-                    <button type="button" class="btn btn-primary" id="calculate-shipping">Cek Ongkir</button>
+                    <div class="mb-3">
+                        <label for="add_alamat" class="form-label">Alamat Tujuan</label>
+                        <div class="input-group">
+                            <textarea class="form-control" id="add_alamat" name="alamat" rows="3" required></textarea>
+                            <button type="button" class="btn btn-outline-secondary" id="use-saved-address-add">Gunakan Alamat Profil</button>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="add_deskripsi_alamat" class="form-label">Deskripsi Alamat (Opsional)</label>
+                        <textarea class="form-control" id="add_deskripsi_alamat" name="deskripsi_alamat" rows="2" placeholder="Contoh: Dekat masjid, warna rumah biru"></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary" id="save-address-add">Simpan Alamat</button>
+                    <div id="add-shipping-result" class="mt-3"></div>
                 </form>
-                <div id="shipping-result" class="mt-3"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal for Editing Shipping Address -->
+<div class="modal fade" id="editShippingModal" tabindex="-1" aria-labelledby="editShippingModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editShippingModalLabel">Edit Data Pengiriman</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="edit-shipping-form" action="{{ route('user.checkout.updateAddress', $transaction->id) }}" method="POST">
+                    @csrf
+                    <div class="mb-3">
+                        <label for="edit_destination_province" class="form-label">Provinsi Tujuan</label>
+                        <select name="destination_province" id="edit_destination_province" class="form-select" >
+                            <option value="">Pilih Provinsi</option>
+                            @foreach ($provinces as $id => $name)
+                                <option value="{{ $id }}" {{ Auth::user()->asal_provinsi_id == $id ? 'selected' : '' }}>{{ $name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="edit_destination" class="form-label">Kota Tujuan</label>
+                        <select name="destination" id="edit_destination" class="form-select" >
+                            <option value="">Pilih Kota</option>
+                            @if(Auth::user()->asal_kota_id)
+                                <option value="{{ Auth::user()->asal_kota_id }}" selected>{{ Auth::user()->asal_kota }}</option>
+                            @endif
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="edit_courier" class="form-label">Kurir</label>
+                        <select name="courier" id="edit_courier" class="form-select" >
+                            <option value="jne">JNE</option>
+                            <option value="pos">POS</option>
+                            <option value="tiki">TIKI</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="edit_alamat" class="form-label">Alamat Tujuan</label>
+                        <div class="input-group">
+                            <textarea class="form-control" id="edit_alamat" name="alamat" rows="3" >{{ Auth::user()->alamat_tinggal ?? '' }}</textarea>
+                            <button type="button" class="btn btn-outline-secondary" id="use-saved-address-edit">Gunakan Alamat Profil</button>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="edit_deskripsi_alamat" class="form-label">Deskripsi Alamat (Opsional)</label>
+                        <textarea class="form-control" id="edit_deskripsi_alamat" name="deskripsi_alamat" rows="2" placeholder="Contoh: Dekat masjid, warna rumah biru">{{ Auth::user()->deskripsi_alamat ?? '' }}</textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary" id="save-address-edit">Simpan Perubahan</button>
+                    <div id="edit-shipping-result" class="mt-3"></div>
+                </form>
             </div>
         </div>
     </div>
@@ -105,97 +179,158 @@
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
     $(document).ready(function() {
-        $('#destination_province').change(function() {
+        // Load cities dynamically for add modal
+        $('#add_destination_province').change(function() {
             let provinceId = $(this).val();
             if (provinceId) {
                 $.ajax({
                     url: '{{ url("/cities") }}/' + provinceId,
                     type: 'GET',
                     success: function(data) {
-                        $('#destination').empty().append('<option value="">Pilih Kota</option>');
+                        $('#add_destination').empty().append('<option value="">Pilih Kota</option>');
                         $.each(data, function(id, name) {
-                            $('#destination').append('<option value="' + id + '">' + name + '</option>');
+                            $('#add_destination').append('<option value="' + id + '">' + name + '</option>');
                         });
                     }
                 });
             }
         });
 
-        $('#calculate-shipping').click(function() {
-            let destination = $('#destination').val();
-            let courier = $('#courier').val();
+        // Load cities dynamically for edit modal
+        $('#edit_destination_province').change(function() {
+            let provinceId = $(this).val();
+            if (provinceId) {
+                $.ajax({
+                    url: '{{ url("/cities") }}/' + provinceId,
+                    type: 'GET',
+                    success: function(data) {
+                        $('#edit_destination').empty().append('<option value="">Pilih Kota</option>');
+                        $.each(data, function(id, name) {
+                            $('#edit_destination').append('<option value="' + id + '">' + name + '</option>');
+                        });
+                        let userCityId = '{{ Auth::user()->asal_kota_id ?? '' }}';
+                        if (userCityId && data[userCityId]) {
+                            $('#edit_destination').val(userCityId);
+                        }
+                    }
+                });
+            }
+        });
 
-            if (!destination || !courier) {
+        // Use saved address for add modal
+        $('#use-saved-address-add').click(function() {
+            const user = @json(Auth::user());
+            const savedAddress = user.alamat_tinggal || '';
+            const savedCity = user.asal_kota || '';
+            const savedProvince = user.asal_provinsi || '';
+            const savedPostalCode = user.kodepos || '';
+
+            if (savedAddress || savedCity || savedProvince || savedPostalCode) {
+                const fullAddress = [savedAddress, savedCity, savedProvince, savedPostalCode].filter(Boolean).join(', ');
+                $('#add_alamat').val(fullAddress);
+                if (user.asal_provinsi_id) {
+                    $('#add_destination_province').val(user.asal_provinsi_id).trigger('change');
+                    if (user.asal_kota_id) {
+                        setTimeout(() => $('#add_destination').val(user.asal_kota_id), 100);
+                    }
+                }
+            } else {
                 Swal.fire({
-                    icon: 'error',
-                    title: 'Error',
-                    text: 'Silakan pilih kota tujuan dan kurir.',
+                    icon: 'warning',
+                    title: 'Alamat Tidak Tersedia',
+                    text: 'Silakan lengkapi alamat di profil Anda atau masukkan secara manual.',
                     confirmButtonText: 'OK'
                 });
-                return;
             }
+        });
 
+        // Use saved address for edit modal
+        $('#use-saved-address-edit').click(function() {
+            const user = @json(Auth::user());
+            const savedAddress = user.alamat_tinggal || '';
+            const savedCity = user.asal_kota || '';
+            const savedProvince = user.asal_provinsi || '';
+            const savedPostalCode = user.kodepos || '';
+
+            if (savedAddress || savedCity || savedProvince || savedPostalCode) {
+                const fullAddress = [savedAddress, savedCity, savedProvince, savedPostalCode].filter(Boolean).join(', ');
+                $('#edit_alamat').val(fullAddress);
+                if (user.asal_provinsi_id) {
+                    $('#edit_destination_province').val(user.asal_provinsi_id).trigger('change');
+                    if (user.asal_kota_id) {
+                        setTimeout(() => $('#edit_destination').val(user.asal_kota_id), 100);
+                    }
+                }
+            }
+        });
+
+        // Handle form submission for add modal
+        $('#add-shipping-form').submit(function(e) {
+            e.preventDefault();
             $.ajax({
-                url: '{{ route("user.checkout.calculate", $transaction->id) }}',
+                url: $(this).attr('action'),
                 type: 'POST',
-                data: {
-                    destination: destination,
-                    courier: courier,
-                    jumlah: {{ $transaction->jumlah }},
-                    _token: '{{ csrf_token() }}'
-                },
-                success: function(data) {
-                    let result = '<h5>Pilih Layanan Pengiriman:</h5>';
-                    $.each(data, function(i, cost) {
-                        result += '<div class="form-check">';
-                        result += '<input class="form-check-input shipping-option" type="radio" name="shipping_option" value="' + cost.cost[0].value + '" data-service="' + cost.service + '" required>';
-                        result += '<label class="form-check-label">' + cost.service + ': Rp ' + cost.cost[0].value.toLocaleString('id-ID') + ' (' + cost.cost[0].etd + ' hari)</label>';
-                        result += '</div>';
-                    });
-                    result += '<button type="button" class="btn btn-success mt-3" id="save-shipping">Simpan</button>';
-                    $('#shipping-result').html(result);
-
-                    $('#save-shipping').click(function() {
-                        let selectedOption = $('.shipping-option:checked');
-                        if (!selectedOption.length) {
-                            Swal.fire({
-                                icon: 'error',
-                                title: 'Error',
-                                text: 'Silakan pilih layanan pengiriman.',
-                                confirmButtonText: 'OK'
-                            });
-                            return;
-                        }
-
-                        $.ajax({
-                            url: '{{ route("user.checkout.save", $transaction->id) }}',
-                            type: 'POST',
-                            data: {
-                                destination: $('#destination').val(),
-                                courier: $('#courier').val(),
-                                shipping_cost: selectedOption.val(),
-                                service: selectedOption.data('service'),
-                                _token: '{{ csrf_token() }}'
-                            },
-                            success: function(response) {
-                                window.location.href = '{{ route("user.checkout.index") }}';
-                            },
-                            error: function() {
-                                Swal.fire({
-                                    icon: 'error',
-                                    title: 'Error',
-                                    text: 'Gagal menyimpan detail pengiriman.',
-                                    confirmButtonText: 'OK'
-                                });
-                            }
-                        });
+                data: $(this).serialize(),
+                success: function(response) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Berhasil',
+                        text: 'Alamat berhasil disimpan!',
+                        timer: 2000,
+                        showConfirmButton: false
+                    }).then(() => {
+                        $('#addShippingModal').modal('hide');
+                        location.reload();
                     });
                 },
-                error: function() {
-                    $('#shipping-result').html('<p class="text-danger">Gagal mengambil data ongkir.</p>');
+                error: function(xhr) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Gagal',
+                        text: 'Terjadi kesalahan saat menyimpan alamat.',
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
                 }
             });
         });
+
+        // Handle form submission for edit modal
+        $('#edit-shipping-form').submit(function(e) {
+            e.preventDefault();
+            $.ajax({
+                url: $(this).attr('action'),
+                type: 'POST',
+                data: $(this).serialize(),
+                success: function(response) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Berhasil',
+                        text: 'Alamat berhasil diperbarui!',
+                        timer: 2000,
+                        showConfirmButton: false
+                    }).then(() => {
+                        $('#editShippingModal').modal('hide');
+                        location.reload();
+                    });
+                },
+                error: function(xhr) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Gagal',
+                        text: 'Terjadi kesalahan saat memperbarui alamat.',
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
+                }
+            });
+        });
+
+        // Initialize with user's province and city for edit modal
+        let userProvinceId = '{{ Auth::user()->asal_provinsi_id ?? '' }}';
+        if (userProvinceId) {
+            $('#edit_destination_province').val(userProvinceId).trigger('change');
+        }
     });
 </script>
 @endsection
