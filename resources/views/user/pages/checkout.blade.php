@@ -40,6 +40,9 @@
                         @if ($transaction->deskripsi_alamat)
                             <p><strong>Deskripsi Alamat:</strong> {{ $transaction->deskripsi_alamat }}</p>
                         @endif
+                        @if ($transaction->discount > 0)
+                            <p>Diskon: Rp {{ number_format($transaction->discount, 0, ',', '.') }} (Voucher: {{ $transaction->voucher_code }})</p>
+                        @endif
                         <p>Status: {{ ucfirst($transaction->status) }}</p>
                         @if ($transaction->status == 'pending' && $transaction->expired_at)
                             <?php

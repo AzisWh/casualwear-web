@@ -8,10 +8,12 @@ use App\Models\City;
 use App\Models\Province;
 use App\Models\SepatuModel;
 use App\Models\Transaction;
+use App\Models\VoucherModel;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use RealRashid\SweetAlert\Facades\Alert;
@@ -44,6 +46,7 @@ class UserCheckoutController extends Controller
         try {
             $request->validate([
                 'jumlah' => 'required|integer|min:1',
+                'voucher_code' => 'nullable|string',
             ]);
 
             $sepatu = SepatuModel::findOrFail($sepatu_id);
@@ -54,6 +57,29 @@ class UserCheckoutController extends Controller
             }
 
             $total_harga = $sepatu->harga_sepatu * $request->jumlah;
+            $discount = 0;
+            $voucher = null;
+
+            if ($request->voucher_code) {
+                $voucher = VoucherModel::where('code', $request->voucher_code)
+                    ->where('is_active', true)
+                    ->where('start_date', '<=', Carbon::now())
+                    ->where('end_date', '>=', Carbon::now())
+                    ->where('max_usage', '>', DB::raw('used_count'))
+                    ->first();
+
+                if ($voucher) {
+                    if ($voucher->discount_type === 'percentage') {
+                        $discount = $total_harga * ($voucher->discount_value / 100);
+                    } else {
+                        $discount = min($voucher->discount_value, $total_harga);
+                    }
+                    $total_harga -= $discount;
+                    $voucher->increment('used_count');
+                } else {
+                    Alert::warning('Peringatan', 'Kode voucher tidak valid atau kadaluarsa.');
+                }
+            }
 
             if ($total_harga > 99999999.99) {
                 Alert::error('Error', 'Total harga melebihi batas maksimum yang diizinkan.');
@@ -67,10 +93,11 @@ class UserCheckoutController extends Controller
                 'sepatu_id' => $sepatu->id,
                 'jumlah' => $request->jumlah,
                 'total_harga' => $total_harga,
+                'discount' => $discount,
+                'voucher_code' => $voucher ? $request->voucher_code : null,
                 'status' => 'pending',
                 'expired_at' => $expired_at,
             ]);
-
 
             $order_id = 'ORDER-' . $transaction->id . '-' . time();
             $transaction->update(['order_id' => $order_id]);
@@ -88,6 +115,15 @@ class UserCheckoutController extends Controller
                     'name' => $sepatu->title,
                 ],
             ];
+
+            if ($discount > 0) {
+                $item_details[] = [
+                    'id' => 'DISCOUNT',
+                    'price' => -$discount,
+                    'quantity' => 1,
+                    'name' => 'Diskon (' . $request->voucher_code . ')',
+                ];
+            }
 
             $customer_details = [
                 'first_name' => Auth::user()->nama_depan,
@@ -113,10 +149,6 @@ class UserCheckoutController extends Controller
             ];
 
             $snapToken = Snap::getSnapToken($midtrans_params);
-            // if (!$snapToken) {
-            //     Log::error('Gagal menghasilkan snap token', ['params' => $midtrans_params]);
-            //     throw new Exception('Gagal menghasilkan snap token dari Midtrans.');
-            // }
             $transaction->snap_token = $snapToken;
             $transaction->save();
 
@@ -124,14 +156,34 @@ class UserCheckoutController extends Controller
             return redirect()->route('user.checkout.index')->with('snapToken', $snapToken);
 
         } catch (Exception $e) {
-            // Rollback stok jika gagal
             if (isset($transaction)) {
                 $transaction->delete();
+                if ($voucher) {
+                    $voucher->decrement('used_count');
+                }
             }
 
             Alert::error('Error', 'Gagal melakukan checkout: ' . $e->getMessage());
             return back();
         }
+    }
+
+    public function checkVoucher(Request $request)
+    {
+        $request->validate(['code' => 'required|string']);
+        $voucher = VoucherModel::where('code', $request->code)
+            ->where('is_active', true)
+            ->where('start_date', '<=', Carbon::now())
+            ->where('end_date', '>=', Carbon::now())
+            ->where('max_usage', '>', DB::raw('used_count'))
+            ->first();
+
+        if ($voucher) {
+            Alert::success('Berhasil', 'Kode voucher ' . $request->code . ' diterapkan!');
+            return back()->with('discount_value', $voucher->discount_value)->with('discount_type', $voucher->discount_type);
+        }
+        Alert::error('Gagal', 'Kode voucher tidak valid atau kadaluarsa.');
+        return back();
     }
 
     public function detail($id)

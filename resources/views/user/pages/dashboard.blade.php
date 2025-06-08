@@ -78,8 +78,14 @@
                       <input type="number" name="jumlah" class="form-control jumlahInput" data-harga="{{ $sepatu->harga_sepatu }}" min="1" max="{{ $sepatu->stok }}" required>
                     </div>
                     <div class="mb-3">
+                      <label for="voucher_code" class="form-label">Kode Voucher (Opsional):</label>
+                      <input type="text" name="voucher_code" id="voucher_code_{{ $sepatu->id }}" class="form-control" placeholder="Masukkan kode voucher">
+                      <button type="button" class="btn btn-secondary mt-2" onclick="applyVoucher('{{ $sepatu->id }}')">Terapkan Voucher</button>
+                      <p id="voucher_message_{{ $sepatu->id }}" class="mt-2" style="display: none;"></p>
+                    </div>
+                    <div class="mb-3">
                       <label>Total Harga:</label>
-                      <p class="fw-bold totalHargaText">Rp 0</p>
+                      <p class="fw-bold totalHargaText" id="totalHargaText_{{ $sepatu->id }}">Rp 0</p>
                     </div>
                   </div>
                   <div class="modal-footer">
@@ -127,17 +133,88 @@
 </section>
 
 <script>
-    document.querySelectorAll('.jumlahInput').forEach(function(input) {
-      input.addEventListener('input', function () {
-        const harga = parseInt(this.dataset.harga);
-        const jumlah = parseInt(this.value);
-        const totalText = this.closest('.modal-body').querySelector('.totalHargaText');
-        if (!isNaN(jumlah)) {
-          totalText.innerText = 'Rp ' + (harga * jumlah).toLocaleString('id-ID');
-        } else {
-          totalText.innerText = 'Rp 0';
+    document.addEventListener('DOMContentLoaded', function() {
+        // Check for flash messages on page load
+        @if (session('success'))
+            Swal.fire({
+                icon: 'success',
+                title: 'Berhasil',
+                text: '{{ session('success') }}',
+                confirmButtonText: 'OK'
+            });
+        @endif
+        @if (session('error'))
+            Swal.fire({
+                icon: 'error',
+                title: 'Gagal',
+                text: '{{ session('error') }}',
+                confirmButtonText: 'OK'
+            });
+        @endif
+
+        document.querySelectorAll('.jumlahInput').forEach(function(input) {
+            input.addEventListener('input', function () {
+                const harga = parseInt(this.dataset.harga);
+                const jumlah = parseInt(this.value);
+                const sepatuId = this.closest('.modal').id.replace('checkoutModal', '').replace('addCartModal', '');
+                const totalText = this.closest('.modal-body').querySelector('.totalHargaText');
+                let discount = 0;
+                const voucherMessage = document.getElementById('voucher_message_' + sepatuId);
+                if (voucherMessage && voucherMessage.dataset.discount) {
+                    discount = parseFloat(voucherMessage.dataset.discount);
+                } else if ('{{ session('discount_value') }}' && '{{ session('discount_type') }}') {
+                    const discountValue = parseFloat('{{ session('discount_value') }}');
+                    discount = '{{ session('discount_type') }}' === 'percentage' ? discountValue : (discountValue / (harga * jumlah) * 100);
+                    voucherMessage.style.display = 'block';
+                    voucherMessage.className = 'text-success mt-2';
+                    voucherMessage.innerText = 'Voucher diterapkan! Diskon: {{ session('discount_type') }} === \'percentage\' ? {{ session('discount_value') }} + \'%\' : \'Rp \' + {{ session('discount_value') }}.toLocaleString(\'id-ID\')';
+                    voucherMessage.dataset.discount = discount;
+                }
+                if (!isNaN(jumlah)) {
+                    let total = harga * jumlah;
+                    if (discount > 0) {
+                        total = total * (1 - discount / 100);
+                    }
+                    totalText.innerText = 'Rp ' + Math.round(total).toLocaleString('id-ID');
+                } else {
+                    totalText.innerText = 'Rp 0';
+                }
+            });
+        });
+
+        function applyVoucher(sepatuId) {
+            const voucherCode = document.getElementById('voucher_code_' + sepatuId).value;
+            const totalText = document.getElementById('totalHargaText_' + sepatuId);
+            const voucherMessage = document.getElementById('voucher_message_' + sepatuId);
+            const jumlahInput = document.querySelector('#checkoutModal' + sepatuId + ' .jumlahInput');
+            const harga = parseInt(jumlahInput.dataset.harga);
+            const jumlah = parseInt(jumlahInput.value);
+
+            if (!voucherCode) {
+                voucherMessage.style.display = 'block';
+                voucherMessage.className = 'text-danger mt-2';
+                voucherMessage.innerText = 'Kode voucher tidak boleh kosong.';
+                voucherMessage.dataset.discount = '0';
+                totalText.innerText = 'Rp ' + (harga * jumlah).toLocaleString('id-ID');
+                return;
+            }
+
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = '{{ route('user.check-voucher') }}';
+            const token = document.createElement('input');
+            token.type = 'hidden';
+            token.name = '_token';
+            token.value = '{{ csrf_token() }}';
+            const code = document.createElement('input');
+            code.type = 'hidden';
+            code.name = 'code';
+            code.value = voucherCode;
+            form.appendChild(token);
+            form.appendChild(code);
+            document.body.appendChild(form);
+            form.submit();
         }
-      });
     });
 </script>
 @endsection
