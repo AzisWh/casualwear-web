@@ -45,6 +45,16 @@
                             <strong>Potongan:</strong> Rp {{ number_format($transaction->discount, 0, ',', '.') }}</p>
                         @endif
                         <p>Status: {{ ucfirst($transaction->status) }}</p>
+                        @if ($transaction->cancellation_status)
+                            <p><strong>Status Pembatalan:</strong> 
+                                <span class="badge bg-{{ $transaction->cancellation_status === 'pending_cancellation' ? 'warning' : ($transaction->cancellation_status === 'approved' ? 'success' : 'danger') }}">
+                                    {{ ucfirst($transaction->cancellation_status) }}
+                                </span>
+                            </p>
+                            @if ($transaction->cancel_reason)
+                                <p><strong>Alasan Pembatalan:</strong> {{ $transaction->cancel_reason }}</p>
+                            @endif
+                        @endif
                         @if ($transaction->status == 'pending' && $transaction->expired_at)
                             <?php
                                 $expiredDate = \Carbon\Carbon::parse($transaction->expired_at, 'Asia/Jakarta');

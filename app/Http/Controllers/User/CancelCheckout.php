@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\User;
 
 use App\Http\Controllers\Controller;
+use App\Models\CancelRequest;
 use App\Models\Transaction;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -26,7 +27,7 @@ class CancelCheckout extends Controller
                 $transaction->save();
 
                 Alert::success('Berhasil!', 'Transaksi berhasil dibatalkan.');
-            } elseif ($transaction->shipping_status === 'shipped') {
+            } elseif ($transaction->shipping_status === 'processed') {
                 $reason = $request->input('reason');
                 $customReason = $request->input('custom_reason');
 
@@ -34,13 +35,16 @@ class CancelCheckout extends Controller
                     throw new \Exception('Silakan pilih alasan atau masukkan alasan khusus.');
                 }
 
-                $transaction->cancel_reason = $reason ?: $customReason;
-                $transaction->shipping_status = 'pending_cancellation'; 
-                $transaction->save();
+                CancelRequest::create([
+                    'transaction_id' => $id,
+                    'reason' => $reason,
+                    'custom_reason' => $customReason,
+                    'status' => 'pending',
+                ]);
 
                 Alert::info('Permintaan Terkirim!', 'Permintaan pembatalan telah dikirim ke admin untuk persetujuan.');
             } else {
-                throw new \Exception('Transaksi tidak dapat dibatalkan karena sudah dikirim atau selesai.');
+                throw new \Exception('Transaksi tidak dapat dibatalkan karena status pengiriman sudah di luar null atau processed.');
             }
 
             return redirect()->route('user.checkout.index');

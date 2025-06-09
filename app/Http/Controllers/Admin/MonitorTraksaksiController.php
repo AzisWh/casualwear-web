@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\CancelRequest;
 use App\Models\Transaction;
 use Illuminate\Http\Request;
 use RealRashid\SweetAlert\Facades\Alert;
@@ -49,5 +50,45 @@ class MonitorTraksaksiController extends Controller
         }
 
         return redirect()->route('admin.transactions.index');
+    }
+
+    public function approveCancellation(Request $request, $id)
+    {
+        try {
+            $transaction = Transaction::findOrFail($id);
+            if ($transaction->cancellation_status === 'pending_cancellation') {
+                $transaction->status = 'cancelled';
+                $transaction->shipping_status = 'cancelled';
+                $transaction->cancellation_status = 'approved';
+                $transaction->save();
+
+                Alert::success('Berhasil!', 'Pembatalan transaksi disetujui.');
+            } else {
+                throw new \Exception('Tidak ada permintaan pembatalan yang tertunda.');
+            }
+            return redirect()->route('admin.transactions.index');
+        } catch (\Exception $e) {
+            Alert::error('Gagal!', $e->getMessage());
+            return redirect()->back();
+        }
+    }
+
+    public function rejectCancellation(Request $request, $id)
+    {
+        try {
+            $transaction = Transaction::findOrFail($id);
+            if ($transaction->cancellation_status === 'pending_cancellation') {
+                $transaction->cancellation_status = 'rejected';
+                $transaction->save();
+
+                Alert::warning('Ditolak!', 'Pembatalan transaksi ditolak.');
+            } else {
+                throw new \Exception('Tidak ada permintaan pembatalan yang tertunda.');
+            }
+            return redirect()->route('admin.transactions.index');
+        } catch (\Exception $e) {
+            Alert::error('Gagal!', $e->getMessage());
+            return redirect()->back();
+        }
     }
 }
