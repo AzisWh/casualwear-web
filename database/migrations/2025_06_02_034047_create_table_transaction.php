@@ -17,7 +17,7 @@ return new class extends Migration
             $table->foreignId('sepatu_id')->constrained('sepatu')->onDelete('cascade');
             $table->integer('jumlah');
             $table->decimal('total_harga', 10, 2);
-            $table->enum('status', ['pending', 'success', 'failed'])->default('pending');
+            $table->enum('status', ['pending', 'success', 'failed','cancelled'])->default('pending');
             $table->timestamps();
         });
     }
