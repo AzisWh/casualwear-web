@@ -26,51 +26,53 @@
     @include('user.components.navbar')
 
     <!-- Modal Edit Profile -->
-  <div class="modal fade" id="editProfileModal" tabindex="-1" aria-labelledby="editProfileModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title" id="editProfileModalLabel">Edit Profile</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-        </div>
-        <div class="modal-body">
-          <form id="editProfileForm" action="{{ route('user.profile.update') }}" method="POST">
-            @csrf
-            @method('PUT')
-            <div class="mb-3">
-              <label for="nama_depan" class="form-label">Nama Depan</label>
-              <input type="text" class="form-control" id="nama_depan" name="nama_depan" value="{{ Auth::user()->nama_depan }}" required>
-            </div>
-            <div class="mb-3">
-              <label for="nama_belakang" class="form-label">Nama Belakang</label>
-              <input type="text" class="form-control" id="nama_belakang" name="nama_belakang" value="{{ Auth::user()->nama_belakang }}" required>
-            </div>
-            <div class="mb-3">
-              <label for="no_hp" class="form-label">No HP</label>
-              <input type="text" class="form-control" id="no_hp" name="no_hp" value="{{ Auth::user()->no_hp }}">
-            </div>
-            <div class="mb-3">
-              <label for="alamat_tinggal" class="form-label">Alamat Tinggal</label>
-              <textarea class="form-control" id="alamat_tinggal" name="alamat_tinggal" rows="3">{{ Auth::user()->alamat_tinggal }}</textarea>
-            </div>
-            <div class="mb-3">
-              <label for="asal_kota" class="form-label">Asal Kota</label>
-              <input type="text" class="form-control" id="asal_kota" name="asal_kota" value="{{ Auth::user()->asal_kota }}">
-            </div>
-            <div class="mb-3">
-              <label for="asal_provinsi" class="form-label">Asal Provinsi</label>
-              <input type="text" class="form-control" id="asal_provinsi" name="asal_provinsi" value="{{ Auth::user()->asal_provinsi }}">
-            </div>
-            <div class="mb-3">
-              <label for="kodepos" class="form-label">Kode Pos</label>
-              <input type="text" class="form-control" id="kodepos" name="kodepos" value="{{ Auth::user()->kodepos }}">
-            </div>
-            <button type="submit" class="btn btn-primary">Simpan Perubahan</button>
-          </form>
+    @auth
+    <div class="modal fade" id="editProfileModal" tabindex="-1" aria-labelledby="editProfileModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="editProfileModalLabel">Edit Profile</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <form id="editProfileForm" action="{{ route('user.profile.update') }}" method="POST">
+              @csrf
+              @method('PUT')
+              <div class="mb-3">
+                <label for="nama_depan" class="form-label">Nama Depan</label>
+                <input type="text" class="form-control" id="nama_depan" name="nama_depan" value="{{ Auth::user()->nama_depan }}" required>
+              </div>
+              <div class="mb-3">
+                <label for="nama_belakang" class="form-label">Nama Belakang</label>
+                <input type="text" class="form-control" id="nama_belakang" name="nama_belakang" value="{{ Auth::user()->nama_belakang }}" required>
+              </div>
+              <div class="mb-3">
+                <label for="no_hp" class="form-label">No HP</label>
+                <input type="text" class="form-control" id="no_hp" name="no_hp" value="{{ Auth::user()->no_hp }}">
+              </div>
+              <div class="mb-3">
+                <label for="alamat_tinggal" class="form-label">Alamat Tinggal</label>
+                <textarea class="form-control" id="alamat_tinggal" name="alamat_tinggal" rows="3">{{ Auth::user()->alamat_tinggal }}</textarea>
+              </div>
+              <div class="mb-3">
+                <label for="asal_kota" class="form-label">Asal Kota</label>
+                <input type="text" class="form-control" id="asal_kota" name="asal_kota" value="{{ Auth::user()->asal_kota }}">
+              </div>
+              <div class="mb-3">
+                <label for="asal_provinsi" class="form-label">Asal Provinsi</label>
+                <input type="text" class="form-control" id="asal_provinsi" name="asal_provinsi" value="{{ Auth::user()->asal_provinsi }}">
+              </div>
+              <div class="mb-3">
+                <label for="kodepos" class="form-label">Kode Pos</label>
+                <input type="text" class="form-control" id="kodepos" name="kodepos" value="{{ Auth::user()->kodepos }}">
+              </div>
+              <button type="submit" class="btn btn-primary">Simpan Perubahan</button>
+            </form>
+          </div>
         </div>
       </div>
     </div>
-  </div>
+    @endauth
 
   <script>
     $(document).ready(function() {

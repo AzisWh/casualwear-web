@@ -61,6 +61,7 @@ Route::middleware('auth')->group(function () {
         Route::post('/checkout/save/{id}', [UserCheckoutController::class, 'saveShipping'])->name('user.checkout.save');
         Route::patch('/checkout/expire/{transactionId}', [UserCheckoutController::class, 'expire'])->name('user.checkout.expire');
         Route::post('/checkout/{id}/update-address', [UserCheckoutController::class, 'updateAddress'])->name('user.checkout.updateAddress');
+        Route::post('/checkout/reconfirm/{id}', [UserCheckoutController::class, 'reconfirmCheckout'])->name('user.checkout.reconfirm');
         // voucher
         Route::post('/check-voucher', [UserCheckoutController::class, 'checkVoucher'])->name('user.check-voucher');
     });
