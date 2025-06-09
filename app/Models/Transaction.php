@@ -45,4 +45,9 @@ class Transaction extends Model
     {
         return $this->belongsTo(VoucherModel::class, 'voucher_id', 'id');
     }
+
+    public function review()
+    {
+        return $this->hasOne(ReviewModel::class);
+    }
 }

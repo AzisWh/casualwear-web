@@ -34,4 +34,9 @@ class SepatuModel extends Model
     {
         return $this->hasMany(Transaction::class, 'sepatu_id');
     }
+
+    public function reviews()
+    {
+        return $this->hasMany(ReviewModel::class);
+    }
 }
