@@ -6,6 +6,7 @@ use App\Http\Controllers\Admin\MonitorTraksaksiController;
 use App\Http\Controllers\Admin\SepatuController;
 use App\Http\Controllers\Admin\VoucherController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\User\CancelCheckout;
 use App\Http\Controllers\User\CartController;
 use App\Http\Controllers\User\CheckShipping;
 use App\Http\Controllers\User\DashboardController;
@@ -64,6 +65,7 @@ Route::middleware('auth')->group(function () {
         Route::patch('/checkout/expire/{transactionId}', [UserCheckoutController::class, 'expire'])->name('user.checkout.expire');
         Route::post('/checkout/{id}/update-address', [UserCheckoutController::class, 'updateAddress'])->name('user.checkout.updateAddress');
         Route::post('/checkout/reconfirm/{id}', [UserCheckoutController::class, 'reconfirmCheckout'])->name('user.checkout.reconfirm');
+        Route::patch('/checkout/{id}/cancel', [CancelCheckout::class, 'cancelRequest'])->name('user.checkout.cancel');
         // voucher
         Route::post('/check-voucher', [UserCheckoutController::class, 'checkVoucher'])->name('user.check-voucher');
         // shipping
