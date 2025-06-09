@@ -20,7 +20,7 @@
     {{-- <meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-eval';"> --}}
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.min.js"></script>
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
+    {{-- @vite(['resources/css/app.css', 'resources/js/app.js']) --}}
 
   </head>
   <body>

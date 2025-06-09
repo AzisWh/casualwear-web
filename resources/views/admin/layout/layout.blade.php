@@ -17,7 +17,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
   <!-- Theme style -->
   <link rel="stylesheet" href="/lte/dist/css/adminlte.min.css">
   <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.6.9/dist/sweetalert2.min.css" rel="stylesheet">
-  @vite(['resources/css/app.css', 'resources/js/app.js'])
+  {{-- @vite(['resources/css/app.css', 'resources/js/app.js']) --}}
 
 </head>
 <body class="hold-transition sidebar-mini">
