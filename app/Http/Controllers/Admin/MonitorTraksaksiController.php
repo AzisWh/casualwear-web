@@ -35,4 +35,19 @@ class MonitorTraksaksiController extends Controller
         $transaction = Transaction::with(['user', 'sepatu', 'voucher'])->findOrFail($id);
         return view('admin.transaksi.transaksi-detail', compact('transaction'))->render();
     }
+
+    public function updateShippingStatus(Request $request, $id)
+    {
+        try {
+            $transaction = Transaction::findOrFail($id);
+            $transaction->shipping_status = $request->input('shipping_status');
+            $transaction->save();
+
+            Alert::success('Berhasil!', 'Status pengiriman berhasil diperbarui.');
+        } catch (\Exception $e) {
+            Alert::error('Gagal!', 'Terjadi kesalahan saat memperbarui status pengiriman. ' . $e->getMessage());
+        }
+
+        return redirect()->route('admin.transactions.index');
+    }
 }

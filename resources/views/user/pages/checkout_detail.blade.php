@@ -214,8 +214,9 @@
             }
         });
 
-        // Calculate shipping for shipping modal
+        // Calculate shipping for shipping modal with loading state
         $('#calculate-shipping').click(function() {
+            let $button = $(this);
             let destination = $('#destination').val();
             let courier = $('#courier').val();
             let alamat = $('#alamat').val();
@@ -229,6 +230,9 @@
                 });
                 return;
             }
+
+            // Disable button and add loading state
+            $button.prop('disabled', true).text('Memuat...');
 
             $.ajax({
                 url: '{{ route("user.checkout.calculate", $transaction->id) }}',
@@ -290,6 +294,10 @@
                 },
                 error: function() {
                     $('#shipping-result').html('<p class="text-danger">Gagal mengambil data ongkir.</p>');
+                },
+                complete: function() {
+                    // Re-enable button and restore text after request completes
+                    $button.prop('disabled', false).text('Cek Ongkir');
                 }
             });
         });
@@ -316,8 +324,9 @@
             }
         });
 
-        // Calculate shipping for edit shipping modal
+        // Calculate shipping for edit shipping modal with loading state
         $('#calculate-edit-shipping').click(function() {
+            let $button = $(this);
             let destination = $('#edit_destination').val();
             let courier = $('#edit_courier').val();
             let alamat = $('#edit_alamat').val();
@@ -331,6 +340,9 @@
                 });
                 return;
             }
+
+            // Disable button and add loading state
+            $button.prop('disabled', true).text('Memuat...');
 
             $.ajax({
                 url: '{{ route("user.checkout.calculate", $transaction->id) }}',
@@ -402,6 +414,9 @@
                 },
                 error: function() {
                     $('#edit-shipping-result').html('<p class="text-danger">Gagal mengambil data ongkir.</p>');
+                },
+                complete: function() {
+                    $button.prop('disabled', false).text('Cek Ongkir');
                 }
             });
         });

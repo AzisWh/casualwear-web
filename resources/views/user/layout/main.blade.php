@@ -23,6 +23,20 @@
     {{-- @vite(['resources/css/app.css', 'resources/js/app.js']) --}}
 
   </head>
+
+  <style>
+    @media (max-width: 768px) {
+        .card-body {
+            flex-direction: column;
+            text-align: center;
+        }
+        .card-body .me-3 img {
+            margin: 0 auto 1rem auto; 
+            width: 150px; 
+            height: 150px;
+        }
+    }
+</style>
   <body>
     @include('sweetalert::alert')
     {{-- Navbar --}}

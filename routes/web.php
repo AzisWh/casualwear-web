@@ -91,6 +91,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/transactions', [MonitorTraksaksiController::class, 'index'])->name('admin.transactions.index');
         Route::delete('/transactions/{id}', [MonitorTraksaksiController::class, 'destroy'])->name('admin.transactions.destroy');
         Route::get('/transactions/{id}/detail', [MonitorTraksaksiController::class, 'show'])->name('admin.transactions.show');
+        Route::patch('/transactions/{id}/update-shipping', [MonitorTraksaksiController::class, 'updateShippingStatus'])->name('admin.transactions.update.shipping');
     });
 
    
