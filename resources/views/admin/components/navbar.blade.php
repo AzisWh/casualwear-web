@@ -9,6 +9,14 @@
               </p>
             </a>
         </li>
+        <li class="nav-item">
+          <a href="{{route('admin.transactions.index')}}" class="nav-link">
+              <i class="nav-icon fas fa-tachometer-alt"></i>
+            <p>
+              List Transaksi
+            </p>
+          </a>
+      </li>
         {{-- dropdown --}}
         <li class="nav-item has-treeview">
           <a href="#" class="nav-link">

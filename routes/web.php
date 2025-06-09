@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Admin\AdminDashboardController;
 use App\Http\Controllers\Admin\KategoriController;
+use App\Http\Controllers\Admin\MonitorTraksaksiController;
 use App\Http\Controllers\Admin\SepatuController;
 use App\Http\Controllers\Admin\VoucherController;
 use App\Http\Controllers\AuthController;
@@ -83,6 +84,10 @@ Route::middleware('auth')->group(function () {
         Route::post('/admin-voucher', [VoucherController::class, 'addVoucher'])->name('admin.voucher.store');
         Route::patch('/admin-voucher/{voucher}', [VoucherController::class, 'editVoucher'])->name('admin.voucher.update');
         Route::delete('/admin-voucher/{voucher}', [VoucherController::class, 'delVoucher'])->name('admin.voucher.destroy');
+        // transaksi
+        Route::get('/transactions', [MonitorTraksaksiController::class, 'index'])->name('admin.transactions.index');
+        Route::delete('/transactions/{id}', [MonitorTraksaksiController::class, 'destroy'])->name('admin.transactions.destroy');
+        Route::get('/transactions/{id}/detail', [MonitorTraksaksiController::class, 'show'])->name('admin.transactions.show');
     });
 
    
