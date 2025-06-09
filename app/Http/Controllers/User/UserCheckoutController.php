@@ -97,6 +97,7 @@ class UserCheckoutController extends Controller
                 'discount' => $discount,
                 'voucher_id' => $voucher_id,
                 'status' => 'pending',
+                'shipping_status' => null,
                 'expired_at' => $expired_at,
             ]);
 
@@ -361,6 +362,7 @@ class UserCheckoutController extends Controller
         Log::info('Midtrans Notification Received', $request->all());
 
         try {
+            DB::beginTransaction();
             $notif = new \Midtrans\Notification();
 
             $order_id = $notif->order_id;
@@ -394,6 +396,11 @@ class UserCheckoutController extends Controller
             foreach ($transactions as $transaction) {
                 $transaction->status = $new_status;
                 $transaction->save();
+                
+                if ($new_status === 'success') {
+                    $transaction->shipping_status = 'processed';
+                }
+                $transaction->save();
 
                 if ($transaction->status == 'success') {
                     $sepatu = SepatuModel::findOrFail($transaction->sepatu_id);
@@ -404,6 +411,7 @@ class UserCheckoutController extends Controller
                             'jumlah' => $transaction->jumlah,
                         ]);
                         $transaction->status = 'failed';
+                        $transaction->shipping_status = null;
                         $transaction->save();
                         continue;
                     }
@@ -413,9 +421,11 @@ class UserCheckoutController extends Controller
                     Log::info('Stok dikurangi', ['sepatu_id' => $sepatu->id, 'new_stok' => $sepatu->stok]);
                 }
             }
+            DB::commit();
 
             return response()->json(['status' => 'success', 'message' => 'Notification processed'], 200);
         } catch (\Exception $e) {
+            DB::rollBack();
             Log::error('Gagal memproses notifikasi Midtrans', [
                 'error' => $e->getMessage(),
                 'request' => $request->all(),
@@ -434,80 +444,80 @@ class UserCheckoutController extends Controller
         return redirect()->back()->with('error', 'Transaksi tidak dapat diperbarui atau belum kadaluarsa.');
     }
 
-    public function reconfirmCheckout($id)
-    {
-        try {
-            $transaction = Transaction::where('user_id', Auth::id())->findOrFail($id);
-            $sepatu = $transaction->sepatu;
+    // public function reconfirmCheckout($id)
+    // {
+    //     try {
+    //         $transaction = Transaction::where('user_id', Auth::id())->findOrFail($id);
+    //         $sepatu = $transaction->sepatu;
 
-            if ($sepatu->stok < $transaction->jumlah) {
-                Alert::error('Error', 'Stok tidak mencukupi untuk konfirmasi ulang.');
-                return redirect()->back();
-            }
+    //         if ($sepatu->stok < $transaction->jumlah) {
+    //             Alert::error('Error', 'Stok tidak mencukupi untuk konfirmasi ulang.');
+    //             return redirect()->back();
+    //         }
 
-            $expired_at = Carbon::now()->addHours(24);
-            $transaction->update([
-                'status' => 'pending',
-                'expired_at' => $expired_at,
-                'snap_token' => null, 
-            ]);
+    //         $expired_at = Carbon::now()->addHours(24);
+    //         $transaction->update([
+    //             'status' => 'pending',
+    //             'expired_at' => $expired_at,
+    //             'snap_token' => null, 
+    //         ]);
 
-            $transaction_details = [
-                'order_id' => $transaction->order_id,
-                'gross_amount' => $transaction->total_harga,
-            ];
+    //         $transaction_details = [
+    //             'order_id' => $transaction->order_id,
+    //             'gross_amount' => $transaction->total_harga,
+    //         ];
 
-            $item_details = [
-                [
-                    'id' => $sepatu->id,
-                    'price' => $sepatu->harga_sepatu,
-                    'quantity' => $transaction->jumlah,
-                    'name' => $sepatu->title,
-                ],
-            ];
+    //         $item_details = [
+    //             [
+    //                 'id' => $sepatu->id,
+    //                 'price' => $sepatu->harga_sepatu,
+    //                 'quantity' => $transaction->jumlah,
+    //                 'name' => $sepatu->title,
+    //             ],
+    //         ];
 
-            if ($transaction->discount > 0) {
-                $item_details[] = [
-                    'id' => 'DISCOUNT',
-                    'price' => -$transaction->discount,
-                    'quantity' => 1,
-                    'name' => 'Diskon (' . ($transaction->voucher_id ? VoucherModel::find($transaction->voucher_id)->code : '') . ')',
-                ];
-            }
+    //         if ($transaction->discount > 0) {
+    //             $item_details[] = [
+    //                 'id' => 'DISCOUNT',
+    //                 'price' => -$transaction->discount,
+    //                 'quantity' => 1,
+    //                 'name' => 'Diskon (' . ($transaction->voucher_id ? VoucherModel::find($transaction->voucher_id)->code : '') . ')',
+    //             ];
+    //         }
 
-            $customer_details = [
-                'first_name' => Auth::user()->nama_depan,
-                'last_name' => Auth::user()->nama_belakang,
-                'email' => Auth::user()->email,
-                'phone' => Auth::user()->no_hp,
-            ];
+    //         $customer_details = [
+    //             'first_name' => Auth::user()->nama_depan,
+    //             'last_name' => Auth::user()->nama_belakang,
+    //             'email' => Auth::user()->email,
+    //             'phone' => Auth::user()->no_hp,
+    //         ];
 
-            $midtrans_params = [
-                'transaction_details' => $transaction_details,
-                'item_details' => $item_details,
-                'customer_details' => $customer_details,
-                'enabled_payments' => ['gopay', 'shopeepay', 'bank_transfer', 'qris'],
-                'callbacks' => [
-                    'finish' => route('user.checkout.index'),
-                ],
-                'expiry' => [
-                    'start_time' => Carbon::now()->format('Y-m-d H:i:s O'),
-                    'duration' => 24,
-                    'unit' => 'hours',
-                ],
-                'custom_field1' => $transaction->id,
-            ];
+    //         $midtrans_params = [
+    //             'transaction_details' => $transaction_details,
+    //             'item_details' => $item_details,
+    //             'customer_details' => $customer_details,
+    //             'enabled_payments' => ['gopay', 'shopeepay', 'bank_transfer', 'qris'],
+    //             'callbacks' => [
+    //                 'finish' => route('user.checkout.index'),
+    //             ],
+    //             'expiry' => [
+    //                 'start_time' => Carbon::now()->format('Y-m-d H:i:s O'),
+    //                 'duration' => 24,
+    //                 'unit' => 'hours',
+    //             ],
+    //             'custom_field1' => $transaction->id,
+    //         ];
 
-            $snapToken = Snap::getSnapToken($midtrans_params);
-            $transaction->snap_token = $snapToken;
-            $transaction->save();
+    //         $snapToken = Snap::getSnapToken($midtrans_params);
+    //         $transaction->snap_token = $snapToken;
+    //         $transaction->save();
 
-            Alert::success('Berhasil', 'Checkout dikonfirmasi ulang! Silakan selesaikan pembayaran dalam 24 jam.');
-            return redirect()->route('user.checkout.index')->with('snapToken', $snapToken);
+    //         Alert::success('Berhasil', 'Checkout dikonfirmasi ulang! Silakan selesaikan pembayaran dalam 24 jam.');
+    //         return redirect()->route('user.checkout.index')->with('snapToken', $snapToken);
 
-        } catch (Exception $e) {
-            Alert::error('Error', 'Gagal mengkonfirmasi ulang checkout: ' . $e->getMessage());
-            return redirect()->back();
-        }
-    }
+    //     } catch (Exception $e) {
+    //         Alert::error('Error', 'Gagal mengkonfirmasi ulang checkout: ' . $e->getMessage());
+    //         return redirect()->back();
+    //     }
+    // }
 }

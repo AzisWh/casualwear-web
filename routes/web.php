@@ -7,6 +7,7 @@ use App\Http\Controllers\Admin\SepatuController;
 use App\Http\Controllers\Admin\VoucherController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\User\CartController;
+use App\Http\Controllers\User\CheckShipping;
 use App\Http\Controllers\User\DashboardController;
 use App\Http\Controllers\User\UserCheckoutController;
 use App\Http\Controllers\User\UserDataController;
@@ -65,6 +66,8 @@ Route::middleware('auth')->group(function () {
         Route::post('/checkout/reconfirm/{id}', [UserCheckoutController::class, 'reconfirmCheckout'])->name('user.checkout.reconfirm');
         // voucher
         Route::post('/check-voucher', [UserCheckoutController::class, 'checkVoucher'])->name('user.check-voucher');
+        // shipping
+        Route::get('/check-shipping', [CheckShipping::class, 'index'])->name('user.shipping.index');
     });
     //admin
     Route::middleware('role:1')->group(function () {
