@@ -22,5 +22,13 @@ class UserSeed extends Seeder
             'role_type' => 1,
             'gender' => 'Laki'
         ]);
+        DB::table('users')->insert([
+            'nama_depan' => 'ali',
+            'nama_belakang' => 'topan',
+            'email' => 'alitopan@gmail.com',
+            'password' => Hash::make('alitopan@gmail.com'),
+            'role_type' => 0,
+            'gender' => 'Laki'
+        ]);
     }
 }
