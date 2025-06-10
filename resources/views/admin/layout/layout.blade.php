@@ -13,11 +13,11 @@ scratch. This page gets rid of all links and provides the needed markup only.
   <!-- Google Font: Source Sans Pro -->
   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
   <!-- Font Awesome Icons -->
-  <link rel="stylesheet" href="{{ asset('assets/LTE/plugins/fontawesome-free/css/all.min.css') }}">
+  <link rel="stylesheet" href="{{ asset('assets/lte/plugins/fontawesome-free/css/all.min.css') }}">
   {{-- <link rel="stylesheet" href="/lte/plugins/fontawesome-free/css/all.min.css"> --}}
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <!-- Theme style -->
-  <link rel="stylesheet" href="{{ asset('assets/LTE/dist/css/adminlte.min.css') }}">
+  <link rel="stylesheet" href="{{ asset('assets/lte/dist/css/adminlte.min.css') }}">
   <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.6.9/dist/sweetalert2.min.css" rel="stylesheet">
   {{-- @vite(['resources/css/app.css', 'resources/js/app.js']) --}}
 
@@ -45,7 +45,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
   <aside class="main-sidebar sidebar-dark-primary elevation-4">
     <!-- Brand Logo -->
     <a href="index3.html" class="brand-link">
-        <img src="{{ asset('assets/LTE/dist/img/AdminLTELogo.png') }}" alt="AdminLTE Logo" class="brand-image img-circle elevation-3" style="opacity: .8">
+        <img src="{{ asset('assets/lte/dist/img/AdminLTELogo.png') }}" alt="AdminLTE Logo" class="brand-image img-circle elevation-3" style="opacity: .8">
         <span class="brand-text font-weight-light">Admin Dashboard</span>
       </a>
 
@@ -129,9 +129,9 @@ scratch. This page gets rid of all links and provides the needed markup only.
 {{-- <script src="/lte/plugins/jquery/jquery.min.js"></script> --}}
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <!-- Bootstrap 4 -->
-<script src="{{ asset('assets/LTE/plugins/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
+<script src="{{ asset('assets/lte/plugins/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
 <!-- AdminLTE App -->
-<script src="{{ asset('assets/LTE/dist/js/adminlte.min.js') }}"></script>
+<script src="{{ asset('assets/lte/dist/js/adminlte.min.js') }}"></script>
 {{-- <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script> --}}
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
