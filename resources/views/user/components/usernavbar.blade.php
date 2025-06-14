@@ -64,25 +64,6 @@
         @if ($cartCount > 0)
           <ul class="list-group mb-3">
             @foreach ($cartItems as $item)
-              {{-- <li class="list-group-item d-flex justify-content-between lh-sm"> --}}
-                {{-- <div class="card mb-3" style="max-width: 540px;">
-                  <div class="row g-0">
-                    <div class="col-md-4">
-                      <img src="{{ asset('storage/' . $item->sepatu->image_sepatu) }}" alt="{{ $item->sepatu->title }}" class="me-2 rounded" style="width: 50px; height: 50px; object-fit: cover;">
-                    </div>
-                    <div class="col-md-8">
-                      <div class="card-body">
-                        <h6 class="my-0">{{ $item->sepatu->title }}</h6>
-                        <p class="card-text"><small class="text-body-secondary">Qty: {{ $item->jumlah }}</small></p>
-                        <form id="deleteForm_{{ $item->id }}" action="{{ route('cart.delete', $item->id) }}" method="POST" onsubmit="return false;">
-                          @csrf
-                          @method('DELETE')
-                          <button type="button" class="btn btn-sm btn-danger ms-2" onclick="confirmDelete({{ $item->id }})">Hapus</button>
-                        </form>
-                      </div>
-                    </div>
-                  </div>
-                </div> --}}
                 <li class="list-group-item d-flex flex-column justify-content-between lh-sm p-3">
                   <div class="border rounded border-black ">
                     <div class="p-2">
@@ -185,26 +166,21 @@
                         <button type="submit" class="dropdown-item">Logout</button>
                         </form>
                     </li>
+                    <li class="d-lg-none mx-2">
+                      <a href="#" data-bs-toggle="offcanvas" data-bs-target="#offcanvasCart" aria-controls="offcanvasCart" class="cart-icon">
+                      <button class="d-flex justify-content-between align-items-center mb-3 fs-6 gap-2" id="#cart">
+                        <span class="">Your Cart</span>
+                        <span class="badge bg-primary rounded-pill">{{ $cartCount }}</span>
+                      </button>
+                     </a>
+                    </li>
                     </ul>
                 </div>
                 @else
                 <a href="{{ route('register') }}" class="btn btn-outline-primary btn-sm me-2">Sign Up</a>
                 <a href="{{ route('login') }}" class="btn btn-outline-success btn-sm">Login</a>
                 @endauth
-              <li class="d-lg-none mx-2">
-                <a href="#">
-                  <svg width="24" height="24" viewBox="0 0 24 24">
-                    <use xlink:href="#heart"></use>
-                  </svg>
-                </a>
-              </li>
-              <li class="d-lg-none mx-2">
-                <a href="#" data-bs-toggle="offcanvas" data-bs-target="#offcanvasCart" aria-controls="offcanvasCart">
-                  <svg width="24" height="24" viewBox="0 0 24 24">
-                    <use xlink:href="#cart"></use>
-                  </svg>
-                </a>
-              </li>
+             
             </ul>
           </div>
     
