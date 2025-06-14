@@ -4,8 +4,8 @@
         <div class="col-md-3 col-sm-6">
           <div class="footer-menu footer-menu-001">
             <div class="footer-intro mb-4">
-              <a href="index.html">
-                <img src="{{asset('assets/img/logo-white.jpeg')}}" alt="logo">
+              <a href="{{route('user.home')}}">
+                <h5 class="widget-title text-uppercase mb-4">KickCasual</h5>
               </a>
             </div>
             <p>Gravida massa volutpat aenean odio. Amet, turpis erat nullam fringilla elementum diam in. Nisi, purus
