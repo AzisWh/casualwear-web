@@ -1,12 +1,4 @@
 
-@php
-  use App\Models\CartModel;
-
-  $cartItems = auth()->check()
-    ? CartModel::with('sepatu')->where('user_id', auth()->id())->get()
-    : collect();
-  $cartCount = $cartItems->sum('jumlah');
-@endphp
 
 <div class="search-popup">
     <div class="search-popup-container">
@@ -56,18 +48,33 @@
     </div>
     <div class="offcanvas-body">
       <div class="order-md-last">
+        @php
+        use App\Models\CartModel;
+
+        $cartItems = auth()->check()
+          ? CartModel::with('sepatu')->where('user_id', auth()->id())->get()
+          : collect();
+        $cartCount = $cartItems->sum('jumlah');
+        @endphp
         <h4 class="d-flex justify-content-between align-items-center mb-3">
           <span class="text-primary">Your Cart</span>
           <span class="badge bg-primary rounded-pill">{{ $cartCount }}</span>
         </h4>
+        
         @if ($cartCount > 0)
           <ul class="list-group mb-3">
             @foreach ($cartItems as $item)
               <li class="list-group-item d-flex justify-content-between lh-sm">
                 <div>
+                  <img src="{{ asset('storage/' . $item->sepatu->image_sepatu) }}" alt="{{ $item->sepatu->title }}" class="me-2 rounded" style="width: 50px; height: 50px; object-fit: cover;">
                   <h6 class="my-0">{{ $item->sepatu->title }}</h6>
                   <small class="text-body-secondary">Qty: {{ $item->jumlah }}</small>
                 </div>
+                <form id="deleteForm_{{ $item->id }}" action="{{ route('cart.delete', $item->id) }}" method="POST" onsubmit="return false;">
+                  @csrf
+                  @method('DELETE')
+                  <button type="button" class="btn btn-sm btn-danger ms-2" onclick="confirmDelete({{ $item->id }})">Hapus</button>
+                </form>
                 <span class="text-body-secondary">Rp {{ number_format($item->total_harga, 0, ',', '.') }}</span>
               </li>
             @endforeach
@@ -77,7 +84,7 @@
             </li>
           </ul>
           <a href="{{ route('user.cart.index') }}" class="w-100 btn btn-primary btn-lg mb-2">Lihat Detail Keranjang</a>
-          <a href="{{ route('checkout') }}" class="w-100 btn btn-success btn-lg">Continue to Checkout</a>
+          {{-- <a href="{{ route('checkout') }}" class="w-100 btn btn-success btn-lg">Continue to Checkout</a> --}}
         @else
           <p class="text-center text-muted">Keranjang kosong</p>
         @endif
@@ -133,7 +140,7 @@
             <ul class="list-unstyled d-flex m-0">
               <li class="d-none d-lg-block">
                 <a href="index.html" class="text-uppercase mx-3" data-bs-toggle="offcanvas" data-bs-target="#offcanvasCart" aria-controls="offcanvasCart">
-                  Cart <span class="cart-count">(0)</span>
+                  Cart <span class="badge bg-primary rounded-pill">{{ $cartCount }}</span>
                 </a>
               </li>
               @auth
