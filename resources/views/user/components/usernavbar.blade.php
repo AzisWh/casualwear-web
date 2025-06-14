@@ -109,16 +109,19 @@
               <div class="offcanvas-body">
                 <ul class="navbar-nav justify-content-end flex-grow-1 gap-1 gap-md-5 pe-3">
                   <li class="nav-item">
-                    <a class="nav-link active" href="{{route('user.home')}}">Home</a>
+                    <a class="nav-link {{ request()->is('user/home') || request()->is('/') ? 'active' : '' }}" href="{{ route('user.home') }}">Home</a>
                   </li>
                   <li class="nav-item">
-                    <a class="nav-link" href="{{route('user.checkout.index')}}">Checkout</a>
+                    <a class="nav-link {{ request()->is('user/shop') ? 'active' : '' }}" href="{{ route('user.shop') }}">Product</a>
                   </li>
                   <li class="nav-item">
-                    <a class="nav-link" href="{{route('user.shipping.index')}}">Shipping</a>
+                    <a class="nav-link {{ request()->is('user/checkout*') ? 'active' : '' }}" href="{{ route('user.checkout.index') }}">Checkout</a>
                   </li>
                   <li class="nav-item">
-                    <a class="nav-link" href="#">Contact</a>
+                    <a class="nav-link {{ request()->is('user/shipping*') ? 'active' : '' }}" href="{{ route('user.shipping.index') }}">Shipping</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link {{ request()->is('contact') ? 'active' : '' }}" href="#">Contact</a>
                   </li>
                 </ul>
               </div>

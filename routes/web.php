@@ -39,6 +39,7 @@ Route::post('/logout-action', [AuthController::class, 'logout'])->name('logout.a
 
 // dashboard
 Route::get('/', [DashboardController::class, 'index'])->name('user.home');
+Route::get('/user-shop', [DashboardController::class, 'shop'])->name('user.shop');
 
 
 

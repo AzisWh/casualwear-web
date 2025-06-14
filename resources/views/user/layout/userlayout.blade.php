@@ -84,7 +84,7 @@
      </div>
      @endauth
 
-    <section class="container py-5">
+    <section class="">
         @yield('content')
     </section>
 

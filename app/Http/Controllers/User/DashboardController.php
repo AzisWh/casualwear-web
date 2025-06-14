@@ -18,4 +18,14 @@ class DashboardController extends Controller
         $dataKategori = KategoriModel::all();
         return view('user.pages.dashboard', compact('dataSepatu', 'dataKategori','kategoriId'));
     }
+
+    public function shop(Request $request)
+    {
+        $kategoriId = $request->query('kategori');
+        $dataSepatu = SepatuModel::when($kategoriId, function ($query, $kategoriId) {
+            return $query->where('id_kat', $kategoriId);
+        })->get();
+        $dataKategori = KategoriModel::all();
+        return view('user.pages.shop', compact('dataSepatu', 'dataKategori','kategoriId'));
+    }
 }
