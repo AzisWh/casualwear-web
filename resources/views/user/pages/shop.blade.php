@@ -2,7 +2,6 @@
 
 @section('title', 'Home Page')
 
-
 @section('content')
 <div class="bg-light ">
   <div class="container pt-5">
@@ -24,32 +23,56 @@
 
 <section class="py-3">
     <div class="container">
-      <div class="row gx-4 gx-lg-5 row-cols-2 row-cols-md-3 row-cols-xl-4 justify-content-center">
+      <div class="py-8 bg-light">
+        <div class="container">
+          <div class="row mb-8 justify-content-center">
+            <div class="col-lg-8 col-md-12 col-12 text-center">
+              <!-- caption -->
+              <span class="text-primary mb-3 d-block text-uppercase fw-semibold ls-xl">Telusuri Produk Kami</span>
+              <h2 class="mb-2 display-4 fw-bold">Discover Your Perfect Pair!</h2>
+              <p class="lead">Explore our wide range of stylish and comfortable shoes, designed to elevate your everyday look.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="row ">
         @forelse ($dataSepatu as $sepatu)
-          <div class="col mb-5">
-            <div class="card h-100">
-              <img class="card-img-top"
-                src="{{ asset('storage/' . $sepatu->image_sepatu) }}"
-                alt="{{ $sepatu->title }}"
-                style="height: 200px; object-fit: cover;" />
-              <div class="card-body p-4">
-                <div class="text-center">
-                  <h5 class="fw-bolder">{{ $sepatu->title }}</h5>
-                  <p>Ukuran sepatu: {{ $sepatu->size }}</p>
-                  <p>Harga: Rp {{ number_format($sepatu->harga_sepatu, 0, ',', '.') }}</p>
-                  <p>Stok: <span class="text-danger">{{ $sepatu->stok }}</span></p>
+        <div class="col-lg-6 col-md-12 col-12 mb-4">
+          <div class="card">
+            <div class="card-body p-6">
+              <div class="d-md-flex mb-4">
+                <div class="mb-3 mb-md-0">
+                  <!-- Replace icon with product image -->
+                  <img src="{{ asset('storage/' . $sepatu->image_sepatu) }}" alt="{{ $sepatu->title }}"
+                    class="bg-primary " style="width: 200px; height: 200px; object-fit: cover;">
                 </div>
-                <div class="d-flex flex-column gap-4">
-                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#checkoutModal{{ $sepatu->id }}">
-                      Checkout
-                    </button>
-                    <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addCartModal{{ $sepatu->id }}">
-                      Add to Cart
-                    </button>
+                <div class="ms-md-4">
+                  <h2 class="fw-bold mb-1">{{ $sepatu->title }}</h2>
+                    @if ($sepatu->stok > 0)
+                      <span class="badge bg-success fs-5">Stok Ready</span>
+                    @else
+                      <span class="badge bg-danger fs-5">Out of Stock</span>
+                    @endif
+                  
+                  <p class="text-uppercase fs-6 fw-semibold mb-0">
+                    <span class="text-dark">Size: {{ $sepatu->size }}</span>
+                    <span class="ms-3">Stock: {{ $sepatu->stok }}</span>
+                    <span class="ms-3">{{ $sepatu->stok > 0 ? 'Available' : 'Unavailable' }}</span>
+                  </p>
                 </div>
+              </div>
+              <p class="mb-4 fs-4">Harga: Rp {{ number_format($sepatu->harga_sepatu, 0, ',', '.') }}</p>
+              <div class="d-flex flex-column gap-4">
+                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#checkoutModal{{ $sepatu->id }}">
+                  Checkout
+                </button>
+                <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addCartModal{{ $sepatu->id }}">
+                  Add to Cart
+                </button>
               </div>
             </div>
           </div>
+        </div>
           <!-- Modal Checkout -->
           <div class="modal fade" id="checkoutModal{{ $sepatu->id }}" tabindex="-1" aria-labelledby="checkoutModalLabel{{ $sepatu->id }}" aria-hidden="true">
             <div class="modal-dialog">

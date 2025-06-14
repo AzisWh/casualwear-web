@@ -1,171 +1,163 @@
-@extends('user.layout.main')
+@extends('user.layout.userlayout')
 
 @section('title', 'Detail Checkout')
 
-@section('header')
-<header class="bg-dark py-5">
-  <div class="container px-4 px-lg-5 my-5">
-    <div class="text-center text-white">
-      <h1 class="display-4 fw-bolder">Detail Checkout</h1>
-      <p class="lead fw-normal text-white-50 mb-0">Lengkapi detail pengiriman Anda</p>
-    </div>
-  </div>
-</header>
-@endsection
 
 @section('content')
-<div class="container mt-5">
-    <h2>Detail Transaksi</h2>
-    @if (session('success'))
-        <div class="alert alert-success">{{ session('success') }}</div>
-    @endif
-    @if (session('error'))
-        <div class="alert alert-danger">{{ session('error') }}</div>
-    @endif
-
-    <div class="row">
-        <!-- Gambar Sepatu (Kiri) -->
-        <div class="col-md-4">
-            <img src="{{ asset('storage/' . $transaction->sepatu->image_sepatu) }}" alt="{{ $transaction->sepatu->title }}" class="img-fluid" style="height: 300px; object-fit: cover;">
-        </div>
-
-        <!-- Detail Transaksi (Kanan) -->
-        <div class="col-md-8">
-            <h5 class="card-title">{{ $transaction->sepatu->title }}</h5>
-            <p><strong>Deskripsi Produk:</strong> {{ $transaction->sepatu->deskripsi ?? 'Tidak ada deskripsi' }}</p>
-            <p><strong>Jumlah yang Dibeli:</strong> {{ $transaction->jumlah }}</p>
-            <p><strong>Harga Barang:</strong> Rp {{ number_format($transaction->total_harga, 0, ',', '.') }}</p>
-            <p><strong>Stok Tersedia:</strong> {{ $transaction->sepatu->stok }}</p>
-            <p><strong>Status:</strong> {{ ucfirst($transaction->status) }}</p>
-            <p><strong>Tanggal:</strong> {{ \Carbon\Carbon::parse($transaction->created_at, 'Asia/Jakarta')->format('d M Y H:i') }} WIB</p>
-            @if ($transaction->status == 'pending' && $transaction->expired_at)
-                <?php
-                    $expiredDate = \Carbon\Carbon::parse($transaction->expired_at, 'Asia/Jakarta');
-                    $now = \Carbon\Carbon::now('Asia/Jakarta');
-                    $user = Auth::user();
-                    $isAddressComplete = $user->alamat_tinggal && $user->asal_kota && $user->asal_provinsi && $user->kodepos;
-                    $hasShippingDetails = $transaction->destination && $transaction->courier && $transaction->alamat;
-                ?>
-                <p><strong>Batas Waktu Pembayaran:</strong> {{ $expiredDate->format('d M Y H:i') }} WIB</p>
-                @if ($expiredDate->lt($now))
-                    <p class="text-danger">Transaksi telah kadaluarsa.</p>
-                    <form action="{{ route('user.checkout.expire', $transaction->id) }}" method="POST" style="display:inline;">
-                        @csrf
-                        @method('PATCH')
-                        <button type="submit" class="btn btn-warning btn-sm">Perbarui Status</button>
-                    </form>
-                @else
-                    @if (!$hasShippingDetails)
-                        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#shippingModal">Pilih Pengiriman</button>
+<div class="bg-light">
+    <div class="container pt-5">
+        <h2>Detail Transaksi</h2>
+        @if (session('success'))
+            <div class="alert alert-success">{{ session('success') }}</div>
+        @endif
+        @if (session('error'))
+            <div class="alert alert-danger">{{ session('error') }}</div>
+        @endif
+    
+        <div class="row">
+            <!-- Gambar Sepatu (Kiri) -->
+            <div class="col-md-4">
+                <img src="{{ asset('storage/' . $transaction->sepatu->image_sepatu) }}" alt="{{ $transaction->sepatu->title }}" class="img-fluid" style="height: 300px; object-fit: cover;">
+            </div>
+    
+            <!-- Detail Transaksi (Kanan) -->
+            <div class="col-md-8">
+                <h5 class="card-title">{{ $transaction->sepatu->title }}</h5>
+                <p><strong>Deskripsi Produk:</strong> {{ $transaction->sepatu->deskripsi ?? 'Tidak ada deskripsi' }}</p>
+                <p><strong>Jumlah yang Dibeli:</strong> {{ $transaction->jumlah }}</p>
+                <p><strong>Harga Barang:</strong> Rp {{ number_format($transaction->total_harga, 0, ',', '.') }}</p>
+                <p><strong>Stok Tersedia:</strong> {{ $transaction->sepatu->stok }}</p>
+                <p><strong>Status:</strong> {{ ucfirst($transaction->status) }}</p>
+                <p><strong>Tanggal:</strong> {{ \Carbon\Carbon::parse($transaction->created_at, 'Asia/Jakarta')->format('d M Y H:i') }} WIB</p>
+                @if ($transaction->status == 'pending' && $transaction->expired_at)
+                    <?php
+                        $expiredDate = \Carbon\Carbon::parse($transaction->expired_at, 'Asia/Jakarta');
+                        $now = \Carbon\Carbon::now('Asia/Jakarta');
+                        $user = Auth::user();
+                        $isAddressComplete = $user->alamat_tinggal && $user->asal_kota && $user->asal_provinsi && $user->kodepos;
+                        $hasShippingDetails = $transaction->destination && $transaction->courier && $transaction->alamat;
+                    ?>
+                    <p><strong>Batas Waktu Pembayaran:</strong> {{ $expiredDate->format('d M Y H:i') }} WIB</p>
+                    @if ($expiredDate->lt($now))
+                        <p class="text-danger">Transaksi telah kadaluarsa.</p>
+                        <form action="{{ route('user.checkout.expire', $transaction->id) }}" method="POST" style="display:inline;">
+                            @csrf
+                            @method('PATCH')
+                            <button type="submit" class="btn btn-warning btn-sm">Perbarui Status</button>
+                        </form>
                     @else
-                        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#shippingModal">Ubah Pengiriman</button>
-                        <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#editShippingModal">Edit Data Pengiriman</button>
+                        @if (!$hasShippingDetails)
+                            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#shippingModal">Pilih Pengiriman</button>
+                        @else
+                            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#shippingModal">Ubah Pengiriman</button>
+                            <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#editShippingModal">Edit Data Pengiriman</button>
+                        @endif
                     @endif
                 @endif
-            @endif
+            </div>
         </div>
     </div>
-</div>
-
-<!-- Modal Pengiriman -->
-<div class="modal fade" id="shippingModal" tabindex="-1" aria-labelledby="shippingModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="shippingModalLabel">Pilih Detail Pengiriman</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <form id="shipping-form">
-                    <div class="mb-3">
-                        <label for="destination_province" class="form-label">Provinsi Tujuan</label>
-                        <select name="destination_province" id="destination_province" class="form-select" required>
-                            <option value="">Pilih Provinsi</option>
-                            @foreach ($provinces as $id => $name)
-                                <option value="{{ $id }}">{{ $name }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div class="mb-3">
-                        <label for="destination" class="form-label">Kota Tujuan</label>
-                        <select name="destination" id="destination" class="form-select" required>
-                            <option value="">Pilih Kota</option>
-                        </select>
-                    </div>
-                    <div class="mb-3">
-                        <label for="courier" class="form-label">Kurir</label>
-                        <select name="courier" id="courier" class="form-select" required>
-                            <option value="jne">JNE</option>
-                            <option value="pos">POS</option>
-                            <option value="tiki">TIKI</option>
-                        </select>
-                    </div>
-                    <div class="mb-3">
-                        <label for="alamat" class="form-label">Alamat Tujuan</label>
-                        <div class="input-group">
-                            <textarea class="form-control" id="alamat" name="alamat" rows="3" required></textarea>
-                            <button type="button" class="btn btn-outline-secondary" id="use-saved-address">Gunakan Alamat Profil</button>
+    
+    <!-- Modal Pengiriman -->
+    <div class="modal fade" id="shippingModal" tabindex="-1" aria-labelledby="shippingModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="shippingModalLabel">Pilih Detail Pengiriman</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="shipping-form">
+                        <div class="mb-3">
+                            <label for="destination_province" class="form-label">Provinsi Tujuan</label>
+                            <select name="destination_province" id="destination_province" class="form-select" required>
+                                <option value="">Pilih Provinsi</option>
+                                @foreach ($provinces as $id => $name)
+                                    <option value="{{ $id }}">{{ $name }}</option>
+                                @endforeach
+                            </select>
                         </div>
-                    </div>
-                    <div class="mb-3">
-                        <label for="deskripsi_alamat" class="form-label">Deskripsi Alamat (Opsional)</label>
-                        <textarea class="form-control" id="deskripsi_alamat" name="deskripsi_alamat" rows="2" placeholder="Contoh: Dekat masjid, warna rumah biru"></textarea>
-                    </div>
-                    <button type="button" class="btn btn-primary" id="calculate-shipping">Cek Ongkir</button>
-                </form>
-                <div id="shipping-result" class="mt-3"></div>
+                        <div class="mb-3">
+                            <label for="destination" class="form-label">Kota Tujuan</label>
+                            <select name="destination" id="destination" class="form-select" required>
+                                <option value="">Pilih Kota</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="courier" class="form-label">Kurir</label>
+                            <select name="courier" id="courier" class="form-select" required>
+                                <option value="jne">JNE</option>
+                                <option value="pos">POS</option>
+                                <option value="tiki">TIKI</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="alamat" class="form-label">Alamat Tujuan</label>
+                            <div class="input-group">
+                                <textarea class="form-control" id="alamat" name="alamat" rows="3" required></textarea>
+                                <button type="button" class="btn btn-outline-secondary" id="use-saved-address">Gunakan Alamat Profil</button>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="deskripsi_alamat" class="form-label">Deskripsi Alamat (Opsional)</label>
+                            <textarea class="form-control" id="deskripsi_alamat" name="deskripsi_alamat" rows="2" placeholder="Contoh: Dekat masjid, warna rumah biru"></textarea>
+                        </div>
+                        <button type="button" class="btn btn-primary" id="calculate-shipping">Cek Ongkir</button>
+                    </form>
+                    <div id="shipping-result" class="mt-3"></div>
+                </div>
             </div>
         </div>
     </div>
-</div>
-
-<!-- Modal Edit Data Pengiriman -->
-<div class="modal fade" id="editShippingModal" tabindex="-1" aria-labelledby="editShippingModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="editShippingModalLabel">Edit Data Pengiriman</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <form id="edit-shipping-form">
-                    <div class="mb-3">
-                        <label for="edit_destination_province" class="form-label">Provinsi Tujuan</label>
-                        <select name="destination_province" id="edit_destination_province" class="form-select" required>
-                            <option value="">Pilih Provinsi</option>
-                            @foreach ($provinces as $id => $name)
-                                <option value="{{ $id }}" {{ $transaction->origin_province_id == $id ? 'selected' : '' }}>{{ $name }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div class="mb-3">
-                        <label for="edit_destination" class="form-label">Kota Tujuan</label>
-                        <select name="destination" id="edit_destination" class="form-select" required>
-                            <option value="">Pilih Kota</option>
-                            @if ($transaction->destination)
-                                <option value="{{ $transaction->destination }}" selected>{{ $transaction->destination_city ?? $transaction->destination }}</option>
-                            @endif
-                        </select>
-                    </div>
-                    <div class="mb-3">
-                        <label for="edit_courier" class="form-label">Kurir</label>
-                        <select name="courier" id="edit_courier" class="form-select" required>
-                            <option value="jne" {{ $transaction->courier == 'jne' ? 'selected' : '' }}>JNE</option>
-                            <option value="pos" {{ $transaction->courier == 'pos' ? 'selected' : '' }}>POS</option>
-                            <option value="tiki" {{ $transaction->courier == 'tiki' ? 'selected' : '' }}>TIKI</option>
-                        </select>
-                    </div>
-                    <div class="mb-3">
-                        <label for="edit_alamat" class="form-label">Alamat Tujuan</label>
-                        <textarea class="form-control" id="edit_alamat" name="alamat" rows="3" required>{{ $transaction->alamat ?? '' }}</textarea>
-                    </div>
-                    <div class="mb-3">
-                        <label for="edit_deskripsi_alamat" class="form-label">Deskripsi Alamat (Opsional)</label>
-                        <textarea class="form-control" id="edit_deskripsi_alamat" name="deskripsi_alamat" rows="2" placeholder="Contoh: Dekat masjid, warna rumah biru">{{ $transaction->deskripsi_alamat ?? '' }}</textarea>
-                    </div>
-                    <button type="button" class="btn btn-primary" id="calculate-edit-shipping">Cek Ongkir</button>
-                </form>
-                <div id="edit-shipping-result" class="mt-3"></div>
+    
+    <!-- Modal Edit Data Pengiriman -->
+    <div class="modal fade" id="editShippingModal" tabindex="-1" aria-labelledby="editShippingModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editShippingModalLabel">Edit Data Pengiriman</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="edit-shipping-form">
+                        <div class="mb-3">
+                            <label for="edit_destination_province" class="form-label">Provinsi Tujuan</label>
+                            <select name="destination_province" id="edit_destination_province" class="form-select" required>
+                                <option value="">Pilih Provinsi</option>
+                                @foreach ($provinces as $id => $name)
+                                    <option value="{{ $id }}" {{ $transaction->origin_province_id == $id ? 'selected' : '' }}>{{ $name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="edit_destination" class="form-label">Kota Tujuan</label>
+                            <select name="destination" id="edit_destination" class="form-select" required>
+                                <option value="">Pilih Kota</option>
+                                @if ($transaction->destination)
+                                    <option value="{{ $transaction->destination }}" selected>{{ $transaction->destination_city ?? $transaction->destination }}</option>
+                                @endif
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="edit_courier" class="form-label">Kurir</label>
+                            <select name="courier" id="edit_courier" class="form-select" required>
+                                <option value="jne" {{ $transaction->courier == 'jne' ? 'selected' : '' }}>JNE</option>
+                                <option value="pos" {{ $transaction->courier == 'pos' ? 'selected' : '' }}>POS</option>
+                                <option value="tiki" {{ $transaction->courier == 'tiki' ? 'selected' : '' }}>TIKI</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="edit_alamat" class="form-label">Alamat Tujuan</label>
+                            <textarea class="form-control" id="edit_alamat" name="alamat" rows="3" required>{{ $transaction->alamat ?? '' }}</textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label for="edit_deskripsi_alamat" class="form-label">Deskripsi Alamat (Opsional)</label>
+                            <textarea class="form-control" id="edit_deskripsi_alamat" name="deskripsi_alamat" rows="2" placeholder="Contoh: Dekat masjid, warna rumah biru">{{ $transaction->deskripsi_alamat ?? '' }}</textarea>
+                        </div>
+                        <button type="button" class="btn btn-primary" id="calculate-edit-shipping">Cek Ongkir</button>
+                    </form>
+                    <div id="edit-shipping-result" class="mt-3"></div>
+                </div>
             </div>
         </div>
     </div>

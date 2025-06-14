@@ -1,9 +1,10 @@
-@extends('user.layout.main')
+@extends('user.layout.userlayout')
 
 @section('title', 'User - Cek Pengiriman')
 
 @section('content')
-    <div class="container mt-5">
+   <div class="bg-light">
+    <div class="container pt-5">
         <h2>Cek Pengiriman</h2>
 
         <div class="mb-4">
@@ -55,4 +56,5 @@
             </div>
         @endif
     </div>
+   </div>
 @endsection

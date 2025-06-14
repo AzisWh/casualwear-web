@@ -1,46 +1,48 @@
-@extends('user.layout.main')
+@extends('user.layout.userlayout')
 
 @section('title', 'Keranjang Belanja')
 
 @section('content')
-<div class="container mt-5">
-    <h1>Keranjang Belanja</h1>
-
-    @if(session('success'))
-        <div class="alert alert-success">{{ session('success') }}</div>
-    @endif
-
-    @if($cartItems->isEmpty())
-        <p>Keranjang kosong.</p>
-    @else
-        <div class="row">
-            @foreach($cartItems as $item)
-                <div class="col-md-4 mb-4">
-                    <div class="card">
-                        <img src="{{ asset('storage/' . $item->sepatu->image_sepatu) }}" class="card-img-top" alt="{{ $item->sepatu->title }}" style="height: 200px; object-fit: cover;">
-                        <div class="card-body">
-                            <h5 class="card-title">{{ $item->sepatu->title }}</h5>
-                            <p class="card-text">Qty: {{ $item->jumlah }}</p>
-                            <p class="card-text">Harga: Rp {{ number_format($item->total_harga, 0, ',', '.') }}</p>
-
-                            {{-- Tombol Checkout --}}
-                            <form action="{{ route('user.cart.checkout', $item->id) }}" method="POST" class="d-inline singleCheckoutForm">
-                                @csrf
-                                <button type="submit" class="btn btn-primary btn-sm">Checkout</button>
-                            </form>
-
-                            {{-- Tombol Hapus --}}
-                            <form action="{{ route('cart.delete', $item->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Yakin ingin menghapus item ini?');">
-                                @csrf
-                                @method('DELETE')
-                                <button type="submit" class="btn btn-danger btn-sm">Hapus</button>
-                            </form>
+<div class="bg-light">
+    <div class="container pt-5">
+        <h1>Keranjang Belanja</h1>
+    
+        @if(session('success'))
+            <div class="alert alert-success">{{ session('success') }}</div>
+        @endif
+    
+        @if($cartItems->isEmpty())
+            <p>Keranjang kosong.</p>
+        @else
+            <div class="row">
+                @foreach($cartItems as $item)
+                    <div class="col-md-4 mb-4">
+                        <div class="card">
+                            <img src="{{ asset('storage/' . $item->sepatu->image_sepatu) }}" class="card-img-top" alt="{{ $item->sepatu->title }}" style="height: 200px; object-fit: cover;">
+                            <div class="card-body">
+                                <h5 class="card-title">{{ $item->sepatu->title }}</h5>
+                                <p class="card-text">Qty: {{ $item->jumlah }}</p>
+                                <p class="card-text">Harga: Rp {{ number_format($item->total_harga, 0, ',', '.') }}</p>
+    
+                                {{-- Tombol Checkout --}}
+                                <form action="{{ route('user.cart.checkout', $item->id) }}" method="POST" class="d-inline singleCheckoutForm">
+                                    @csrf
+                                    <button type="submit" class="btn btn-primary btn-sm">Checkout</button>
+                                </form>
+    
+                                {{-- Tombol Hapus --}}
+                                <form action="{{ route('cart.delete', $item->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Yakin ingin menghapus item ini?');">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="btn btn-danger btn-sm">Hapus</button>
+                                </form>
+                            </div>
                         </div>
                     </div>
-                </div>
-            @endforeach
-        </div>
-    @endif
+                @endforeach
+            </div>
+        @endif
+    </div>
 </div>
 @endsection
 
