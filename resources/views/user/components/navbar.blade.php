@@ -9,7 +9,7 @@
 
 <nav class="navbar navbar-expand-lg navbar-light bg-light">
     <div class="container px-4 px-lg-5">
-      <a class="navbar-brand" href="{{ url('/') }}">Start Bootstrap</a>
+      <a class="navbar-brand" href="{{ url('/') }}">KickCasual-store</a>
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
         data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
         aria-expanded="false" aria-label="Toggle navigation">
@@ -21,7 +21,7 @@
           <li class="nav-item"><a class="nav-link active" aria-current="page" href="{{route('user.home')}}">Home</a></li>
           <li class="nav-item"><a class="nav-link" href="{{route('user.checkout.index')}}">Checkout</a></li>
           <li class="nav-item"><a class="nav-link" href="{{route('user.shipping.index')}}">Shipping</a></li>
-          <li class="nav-item dropdown">
+          {{-- <li class="nav-item dropdown">
             <a class="nav-link dropdown-toggle" id="navbarDropdown" href="#" role="button"
               data-bs-toggle="dropdown" aria-expanded="false">Shop</a>
             <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
@@ -30,7 +30,7 @@
               <li><a class="dropdown-item" href="#">Popular Items</a></li>
               <li><a class="dropdown-item" href="#">New Arrivals</a></li>
             </ul>
-          </li>
+          </li> --}}
         </ul>
 
         <div class="d-flex me-3 position-relative">

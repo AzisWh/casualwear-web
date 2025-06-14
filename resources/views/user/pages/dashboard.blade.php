@@ -1,17 +1,7 @@
-@extends('user.layout.main')
+@extends('user.layout.userlayout')
 
 @section('title', 'Home Page')
 
-@section('header')
-<header class="bg-dark py-5">
-  <div class="container px-4 px-lg-5 my-5">
-    <div class="text-center text-white">
-      <h1 class="display-4 fw-bolder">Shop in style</h1>
-      <p class="lead fw-normal text-white-50 mb-0">With this shop homepage template</p>
-    </div>
-  </div>
-</header>
-@endsection
 
 @section('content')
 <div class="container mt-5">
