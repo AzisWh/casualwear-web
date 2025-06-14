@@ -64,18 +64,47 @@
         @if ($cartCount > 0)
           <ul class="list-group mb-3">
             @foreach ($cartItems as $item)
-              <li class="list-group-item d-flex justify-content-between lh-sm">
-                <div>
-                  <img src="{{ asset('storage/' . $item->sepatu->image_sepatu) }}" alt="{{ $item->sepatu->title }}" class="me-2 rounded" style="width: 50px; height: 50px; object-fit: cover;">
-                  <h6 class="my-0">{{ $item->sepatu->title }}</h6>
-                  <small class="text-body-secondary">Qty: {{ $item->jumlah }}</small>
-                </div>
-                <form id="deleteForm_{{ $item->id }}" action="{{ route('cart.delete', $item->id) }}" method="POST" onsubmit="return false;">
-                  @csrf
-                  @method('DELETE')
-                  <button type="button" class="btn btn-sm btn-danger ms-2" onclick="confirmDelete({{ $item->id }})">Hapus</button>
-                </form>
-                <span class="text-body-secondary">Rp {{ number_format($item->total_harga, 0, ',', '.') }}</span>
+              {{-- <li class="list-group-item d-flex justify-content-between lh-sm"> --}}
+                {{-- <div class="card mb-3" style="max-width: 540px;">
+                  <div class="row g-0">
+                    <div class="col-md-4">
+                      <img src="{{ asset('storage/' . $item->sepatu->image_sepatu) }}" alt="{{ $item->sepatu->title }}" class="me-2 rounded" style="width: 50px; height: 50px; object-fit: cover;">
+                    </div>
+                    <div class="col-md-8">
+                      <div class="card-body">
+                        <h6 class="my-0">{{ $item->sepatu->title }}</h6>
+                        <p class="card-text"><small class="text-body-secondary">Qty: {{ $item->jumlah }}</small></p>
+                        <form id="deleteForm_{{ $item->id }}" action="{{ route('cart.delete', $item->id) }}" method="POST" onsubmit="return false;">
+                          @csrf
+                          @method('DELETE')
+                          <button type="button" class="btn btn-sm btn-danger ms-2" onclick="confirmDelete({{ $item->id }})">Hapus</button>
+                        </form>
+                      </div>
+                    </div>
+                  </div>
+                </div> --}}
+                <li class="list-group-item d-flex flex-column justify-content-between lh-sm p-3">
+                  <div class="border rounded border-black ">
+                    <div class="p-2">
+                      <div class="d-flex align-items-center mb-2">
+                        <img src="{{ asset('storage/' . $item->sepatu->image_sepatu) }}" alt="{{ $item->sepatu->title }}" class="me-3 rounded" style="width: 50px; height: 50px; object-fit: cover;">
+                        <div>
+                          <h6 class="my-0">Nama : {{ $item->sepatu->title }}</h6>
+                          <small class="text-body-secondary">Qty: {{ $item->jumlah }}</small>
+                        </div>
+                      </div>
+                      <div class="d-flex justify-content-between align-items-center mt-2">
+                        <span class="text-body-secondary fw-bold">Rp {{ number_format($item->total_harga, 0, ',', '.') }}</span>
+                        <form id="deleteForm_{{ $item->id }}" action="{{ route('cart.delete', $item->id) }}" method="POST" onsubmit="return false;" class="mb-0">
+                          @csrf
+                          @method('DELETE')
+                          <button type="button" class="btn btn-sm btn-danger" onclick="confirmDelete({{ $item->id }})">Hapus</button>
+                        </form>
+                      </div>
+                    </div>
+                  </div>
+                </li>
+                {{-- <span class="text-body-secondary">Rp {{ number_format($item->total_harga, 0, ',', '.') }}</span> --}}
               </li>
             @endforeach
             <li class="list-group-item d-flex justify-content-between">
