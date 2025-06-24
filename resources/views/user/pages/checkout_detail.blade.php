@@ -197,14 +197,25 @@
                     url: '{{ url("/cities") }}/' + provinceId,
                     type: 'GET',
                     success: function(data) {
+        console.log('Province ID:', provinceId);
+        console.log('Cities:', data);
                         $('#destination').empty().append('<option value="">Pilih Kota</option>');
                         $.each(data, function(id, name) {
                             $('#destination').append('<option value="' + id + '">' + name + '</option>');
+                        });
+                    },
+                    error: function(xhr) {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: 'Gagal memuat data kota: ' + xhr.responseJSON?.message || 'Unknown error',
+                            confirmButtonText: 'OK'
                         });
                     }
                 });
             }
         });
+
 
         // Calculate shipping for shipping modal with loading state
         $('#calculate-shipping').click(function() {

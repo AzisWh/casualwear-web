@@ -13,6 +13,7 @@ use Carbon\Carbon;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -200,7 +201,9 @@ class UserCheckoutController extends Controller
 
     public function getCities($province_id)
     {
-        $cities = City::where('province_id', $province_id)->pluck('name', 'city_id');
+        $cities = Cache::remember("cities_province_{$province_id}", now()->addHours(24), function () use ($province_id) {
+            return City::where('province_id', $province_id)->pluck('name', 'city_id');
+        });
         return response()->json($cities);
     }
 

@@ -155,6 +155,7 @@
     crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/swiper@9/swiper-bundle.min.js"></script>
   <script src="{{asset('kaira/js/script.min.js')}}"></script>
+  @yield('script')
 </body>
 
 </html>
