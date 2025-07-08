@@ -190,4 +190,46 @@
     </div>
   </div>
 </section>
+
+<section id="best-sellers" class="best-sellers product-carousel py-5 position-relative overflow-hidden">
+  <div class="container">
+    <div class="d-flex flex-wrap justify-content-between align-items-center mt-5 mb-3">
+      <h4 class="text-uppercase">Best Selling Items</h4>
+      <a href="{{route('user.shop')}}" class="btn-link">View All Products</a>
+    </div>
+    <div class="swiper product-swiper open-up" data-aos="zoom-out">
+      <div class="swiper-wrapper d-flex">
+        @foreach ($bestSellers as $bestSeller)
+          @if ($bestSeller->sepatu)
+            <div class="swiper-slide">
+              <div class="product-item image-zoom-effect link-effect">
+                <div class="image-holder">
+                  <img src="{{ asset('storage/' . $bestSeller->sepatu->image_sepatu) }}" alt="{{ $bestSeller->sepatu->nama }}" class="product-image img-fluid">
+                  <div class="btn-icon btn-wishlist">
+                    <svg width="24" height="24" viewBox="0 0 24 24">
+                      <use xlink:href="#heart"></use>
+                    </svg>
+                  </div>
+                  <div class="product-content">
+                    <h5 class="text-uppercase fs-5 mt-3">
+                      {{ $bestSeller->sepatu->title }}
+                    </h5>
+                    <span class="text-decoration-none" data-after="Add to cart">Rp {{ number_format($bestSeller->sepatu->harga_sepatu, 0, ',', '.') }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          @endif
+        @endforeach
+      </div>
+      <div class="swiper-pagination"></div>
+    </div>
+    <div class="icon-arrow icon-arrow-left"><svg width="50" height="50" viewBox="0 0 24 24">
+        <use xlink:href="#arrow-left"></use>
+      </svg></div>
+    <div class="icon-arrow icon-arrow-right"><svg width="50" height="50" viewBox="0 0 24 24">
+        <use xlink:href="#arrow-right"></use>
+      </svg></div>
+  </div>
+</section>
 @endsection
