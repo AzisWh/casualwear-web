@@ -30,12 +30,21 @@ class SepatuController extends Controller
             'harga_sepatu' => 'required'
         ]);
 
+        if ($request->stok < 10) {
+            Alert::warning('Gagal!', 'Stok tidak boleh kurang dari 10.');
+            return redirect()->back()->withInput(); 
+        }
+
         try {
             $path = null;
     
             if ($request->hasFile('image_sepatu')) {
                 $originalName = time() . '_' . $request->file('image_sepatu')->getClientOriginalName();
                 $path = $request->file('image_sepatu')->storeAs('ImageSepatu', $originalName, 'public');
+            }
+
+            if($request->stok <= 5) {
+                Alert::warning('Perhatian!', '');
             }
     
             SepatuModel::create([
@@ -72,6 +81,11 @@ class SepatuController extends Controller
             $sepatu = SepatuModel::findOrFail($id);
 
             $data = $request->only(['title', 'size', 'id_kat', 'deskripsi', 'stok', 'image_sepatu', 'harga_sepatu']);
+
+            if ($request->filled('stok') && $request->stok < 10) {
+                Alert::warning('Gagal!', 'Stok tidak boleh kurang dari 10.');
+                return redirect()->back()->withInput();
+            }
 
             if ($request->hasFile('image_sepatu')) {
                 // Hapus gambar lama jika ada

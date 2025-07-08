@@ -26,14 +26,19 @@ class UserCheckoutController extends Controller
 {
     public function __construct()
     {
-        Config::$serverKey = config('services.midtrans.server_key');
-        Config::$clientKey = config('services.midtrans.client_key');
-        Config::$isProduction = config('services.midtrans.is_production');
-        Config::$isSanitized = true;
-        Config::$is3ds = true;
-
-        if (empty(Config::$serverKey) || empty(Config::$clientKey)) {
-            throw new Exception('Server Key atau Client Key tidak ditemukan. Periksa konfigurasi di config/services.php dan .env.');
+        try {
+            Config::$serverKey = config('services.midtrans.server_key');
+            Config::$clientKey = config('services.midtrans.client_key');
+            Config::$isProduction = config('services.midtrans.is_production', false);
+            Config::$isSanitized = true;
+            Config::$is3ds = true;
+    
+            if (empty(Config::$serverKey) || empty(Config::$clientKey)) {
+                throw new \Exception('Server Key atau Client Key tidak ditemukan. Periksa konfigurasi.');
+            }
+        } catch (\Exception $e) {
+            Log::error('Midtrans Init Error', ['message' => $e->getMessage()]);
+            abort(500, 'Midtrans Config Error');
         }
     }
     public function index()
@@ -360,52 +365,131 @@ class UserCheckoutController extends Controller
         }
     }
 
+    // public function notification(Request $request)
+    // {
+    //     Log::info('Midtrans Notification Received', $request->all());
+
+    //     try {
+    //         DB::beginTransaction();
+    //         $notif = new \Midtrans\Notification();
+
+    //         $order_id = $notif->order_id;
+    //         $transactions = Transaction::where('order_id', $order_id)->get();
+
+    //         if ($transactions->isEmpty()) {
+    //             Log::error('Transaksi tidak ditemukan', ['order_id' => $order_id]);
+    //             return response()->json(['status' => 'error', 'message' => 'Transaksi tidak ditemukan'], 404);
+    //         }
+
+    //         $status = $notif->transaction_status;
+    //         $fraud = $notif->fraud_status;
+
+    //         $new_status = 'pending';
+    //         if ($status == 'capture') {
+    //             if ($fraud == 'challenge') {
+    //                 $new_status = 'pending';
+    //             } elseif ($fraud == 'accept') {
+    //                 $new_status = 'success';
+    //             }
+    //         } elseif ($status == 'settlement') {
+    //             $new_status = 'success';
+    //         } elseif ($status == 'pending') {
+    //             $new_status = 'pending';
+    //         } elseif ($status == 'deny' || $status == 'cancel') {
+    //             $new_status = 'failed';
+    //         } elseif ($status == 'expire') {
+    //             $new_status = 'expired';
+    //         }
+
+    //         foreach ($transactions as $transaction) {
+    //             $transaction->status = $new_status;
+    //             $transaction->save();
+                
+    //             if ($new_status === 'success') {
+    //                 $transaction->shipping_status = 'processed';
+    //             }
+    //             $transaction->save();
+
+    //             if ($transaction->status == 'success') {
+    //                 $sepatu = SepatuModel::findOrFail($transaction->sepatu_id);
+    //                 if ($transaction->jumlah > $sepatu->stok) {
+    //                     Log::error('Stok tidak cukup saat pembayaran berhasil', [
+    //                         'sepatu_id' => $sepatu->id,
+    //                         'stok' => $sepatu->stok,
+    //                         'jumlah' => $transaction->jumlah,
+    //                     ]);
+    //                     $transaction->status = 'failed';
+    //                     $transaction->shipping_status = null;
+    //                     $transaction->save();
+    //                     continue;
+    //                 }
+
+    //                 $sepatu->stok -= $transaction->jumlah;
+    //                 $sepatu->save();
+    //                 Log::info('Stok dikurangi', ['sepatu_id' => $sepatu->id, 'new_stok' => $sepatu->stok]);
+    //             }
+    //         }
+    //         DB::commit();
+
+    //         return response()->json(['status' => 'success', 'message' => 'Notification processed'], 200);
+    //     } catch (\Exception $e) {
+    //         DB::rollBack();
+    //         Log::error('Gagal memproses notifikasi Midtrans', [
+    //             'error' => $e->getMessage(),
+    //             'request' => $request->all(),
+    //         ]);
+    //         return response()->json(['status' => 'error', 'message' => 'Internal server error'], 500);
+    //     }
+    // }    
+
     public function notification(Request $request)
     {
         Log::info('Midtrans Notification Received', $request->all());
 
+        file_put_contents(storage_path('logs/midtrans_raw_input.txt'), json_encode($request->all(), JSON_PRETTY_PRINT));
+
         try {
             DB::beginTransaction();
-            $notif = new \Midtrans\Notification();
+
+            try {
+                $notif = new \Midtrans\Notification();
+            } catch (\Exception $e) {
+                Log::error('Gagal inisialisasi Midtrans Notification', ['error' => $e->getMessage()]);
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Gagal inisialisasi notifikasi Midtrans',
+                ], 500);
+            }
 
             $order_id = $notif->order_id;
             $transactions = Transaction::where('order_id', $order_id)->get();
 
             if ($transactions->isEmpty()) {
                 Log::error('Transaksi tidak ditemukan', ['order_id' => $order_id]);
-                return response()->json(['status' => 'error', 'message' => 'Transaksi tidak ditemukan'], 404);
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Transaksi tidak ditemukan',
+                ], 404);
             }
 
             $status = $notif->transaction_status;
             $fraud = $notif->fraud_status;
 
-            $new_status = 'pending';
-            if ($status == 'capture') {
-                if ($fraud == 'challenge') {
-                    $new_status = 'pending';
-                } elseif ($fraud == 'accept') {
-                    $new_status = 'success';
-                }
-            } elseif ($status == 'settlement') {
-                $new_status = 'success';
-            } elseif ($status == 'pending') {
-                $new_status = 'pending';
-            } elseif ($status == 'deny' || $status == 'cancel') {
-                $new_status = 'failed';
-            } elseif ($status == 'expire') {
-                $new_status = 'expired';
-            }
+            $new_status = match ($status) {
+                'capture' => $fraud == 'challenge' ? 'pending' : 'success',
+                'settlement' => 'success',
+                'pending' => 'pending',
+                'deny', 'cancel' => 'failed',
+                'expire' => 'expired',
+                default => 'pending',
+            };
 
             foreach ($transactions as $transaction) {
                 $transaction->status = $new_status;
-                $transaction->save();
-                
+
                 if ($new_status === 'success') {
                     $transaction->shipping_status = 'processed';
-                }
-                $transaction->save();
 
-                if ($transaction->status == 'success') {
                     $sepatu = SepatuModel::findOrFail($transaction->sepatu_id);
                     if ($transaction->jumlah > $sepatu->stok) {
                         Log::error('Stok tidak cukup saat pembayaran berhasil', [
@@ -413,6 +497,7 @@ class UserCheckoutController extends Controller
                             'stok' => $sepatu->stok,
                             'jumlah' => $transaction->jumlah,
                         ]);
+
                         $transaction->status = 'failed';
                         $transaction->shipping_status = null;
                         $transaction->save();
@@ -421,21 +506,40 @@ class UserCheckoutController extends Controller
 
                     $sepatu->stok -= $transaction->jumlah;
                     $sepatu->save();
-                    Log::info('Stok dikurangi', ['sepatu_id' => $sepatu->id, 'new_stok' => $sepatu->stok]);
+
+                    Log::info('Stok berhasil dikurangi', [
+                        'sepatu_id' => $sepatu->id,
+                        'stok_baru' => $sepatu->stok,
+                    ]);
                 }
+
+                $transaction->save();
             }
+
             DB::commit();
 
-            return response()->json(['status' => 'success', 'message' => 'Notification processed'], 200);
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Notifikasi berhasil diproses',
+            ], 200);
         } catch (\Exception $e) {
             DB::rollBack();
+
             Log::error('Gagal memproses notifikasi Midtrans', [
                 'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
                 'request' => $request->all(),
             ]);
-            return response()->json(['status' => 'error', 'message' => 'Internal server error'], 500);
+
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Terjadi kesalahan saat memproses notifikasi',
+            ], 500);
         }
     }
+
+
+    
 
     public function expire($transactionId)
     {
