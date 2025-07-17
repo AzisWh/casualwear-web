@@ -6,6 +6,7 @@ use App\Http\Controllers\Admin\MonitorTraksaksiController;
 use App\Http\Controllers\Admin\SepatuController;
 use App\Http\Controllers\Admin\VoucherController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\SuperAdmin\SuperDashboardController;
 use App\Http\Controllers\User\CancelCheckout;
 use App\Http\Controllers\User\CartController;
 use App\Http\Controllers\User\CheckShipping;
@@ -26,9 +27,9 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::get('/', function () {
-    return view('welcome');
-});
+// Route::get('/', function () {
+//     return view('welcome');
+// });
 
 // auth
 Route::get('/login-page',[AuthController::class, 'indexLogin'])->name('login');
@@ -99,6 +100,8 @@ Route::middleware('auth')->group(function () {
         Route::patch('/transactions/{id}/approve-cancellation', [MonitorTraksaksiController::class, 'approveCancellation'])->name('admin.transactions.approve.cancellation');
         Route::patch('/transactions/{id}/reject-cancellation', [MonitorTraksaksiController::class, 'rejectCancellation'])->name('admin.transactions.reject.cancellation');
     });
+});
 
-   
+Route::middleware(['super_admin'])->group(function () {
+    Route::get('/super-dashboard', [SuperDashboardController::class, 'index'])->name('superadmin.dashboard');
 });

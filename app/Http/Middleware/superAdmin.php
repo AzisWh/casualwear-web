@@ -8,20 +8,20 @@ use Illuminate\Support\Facades\Auth;
 use RealRashid\SweetAlert\Facades\Alert;
 use Symfony\Component\HttpFoundation\Response;
 
-class RoleType
+class superAdmin
 {
     /**
      * Handle an incoming request.
-     *
+     *  
      * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
      */
-    public function handle(Request $request, Closure $next, $role): Response
+    public function handle(Request $request, Closure $next)
     {
-        if (!Auth::check() || Auth::user()->role_type != $role) {
-            Alert::warning('Akses Ditolak', 'Anda tidak punya akses.');
+        if (!Auth::guard('superadmin')->check()) {
+            Alert::warning('Akses Ditolak', 'Anda harus login sebagai Super Admin.');
             return redirect()->route('login');
         }
-
+    
         return $next($request);
     }
 }

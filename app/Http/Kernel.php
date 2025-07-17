@@ -68,5 +68,6 @@ class Kernel extends HttpKernel
         'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
         'role' => \App\Http\Middleware\RoleType::class,
         'csp' => \App\Http\Middleware\ContentSecurityPolicy::class,
+        'super_admin' => \App\Http\Middleware\superAdmin::class,
     ];
 }
