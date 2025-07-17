@@ -53,7 +53,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
     <div class="sidebar">
 
       <!-- Sidebar Menu -->
-      @include('admin.components.navbar')
+      @include('superadmin.components.navbar')
       <!-- /.sidebar-menu -->
     </div>
     <!-- /.sidebar -->
@@ -81,7 +81,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 
             <div class="card card-primary card-outline">
               <div class="card-header">
-                <h5 class="m-0">Admin Panel</h5>
+                <h5 class="m-0">SuperAdmin</h5>
               </div>
               <div class="card-body">
                {{-- content --}}

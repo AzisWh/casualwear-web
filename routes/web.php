@@ -6,7 +6,9 @@ use App\Http\Controllers\Admin\MonitorTraksaksiController;
 use App\Http\Controllers\Admin\SepatuController;
 use App\Http\Controllers\Admin\VoucherController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\SuperAdmin\SuperAuthController;
 use App\Http\Controllers\SuperAdmin\SuperDashboardController;
+use App\Http\Controllers\SuperAdmin\UserManagementController;
 use App\Http\Controllers\User\CancelCheckout;
 use App\Http\Controllers\User\CartController;
 use App\Http\Controllers\User\CheckShipping;
@@ -102,6 +104,15 @@ Route::middleware('auth')->group(function () {
     });
 });
 
+Route::get('/login-superadmin', [SuperAuthController::class, 'index'])->name('superadmin.login');
+Route::post('/login-superadmin', [SuperAuthController::class, 'login'])->name('login.super');
+
 Route::middleware(['super_admin'])->group(function () {
-    Route::get('/super-dashboard', [SuperDashboardController::class, 'index'])->name('superadmin.dashboard');
+    Route::post('/logout-superadmin', [SuperAuthController::class, 'logout'])->name('logout.super');
+    // dashboard
+    Route::get('/super-dashboard', [SuperDashboardController::class, 'index'])->name('dashboard.super');
+    Route::get('/super-dashboard/users', [UserManagementController::class, 'index'])->name('dashboard.super.users'); 
+    Route::post('/super-dashboard/users', [UserManagementController::class, 'store'])->name('dashboard.super.users.store');
+    Route::patch('/super-dashboard-users/update/{id}', [UserManagementController::class, 'update'])->name('dashboard.super.users.update');   
+    Route::delete('/super-dashboard-users/delete/{id}', [UserManagementController::class, 'destroy'])->name('dashboard.super.users.destroy');
 });

@@ -19,7 +19,7 @@ class superAdmin
     {
         if (!Auth::guard('superadmin')->check()) {
             Alert::warning('Akses Ditolak', 'Anda harus login sebagai Super Admin.');
-            return redirect()->route('login');
+            return redirect()->route('login.super');
         }
     
         return $next($request);
