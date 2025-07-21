@@ -234,28 +234,48 @@
                 return;
             }
 
-            // Disable button and add loading state
             $button.prop('disabled', true).text('Memuat...');
 
             $.ajax({
                 url: '{{ route("user.checkout.calculate", $transaction->id) }}',
                 type: 'POST',
                 data: {
+                    origin: 31597,
                     destination: destination,
                     courier: courier,
-                    jumlah: {{ $transaction->jumlah }},
+                    weight: {{ $transaction->jumlah * 1000 }},
+                    price: 'lowest',
                     _token: '{{ csrf_token() }}'
                 },
                 success: function(data) {
+                    console.log("RESPON ONGKIR:", data);
                     let result = '<h5>Pilih Layanan Pengiriman:</h5>';
+                    let shippingData = Array.isArray(data) ? data : [data];
+                    if (!shippingData || shippingData.length === 0) {
+                        $('#shipping-result').html('<p class="text-danger">Tidak ada layanan pengiriman tersedia.</p>');
+                        return;
+                    }
+                    console.log("DATA DARI SERVER:", data);
                     $.each(data, function(i, cost) {
                         result += '<div class="form-check">';
-                        result += '<input class="form-check-input shipping-option" type="radio" name="shipping_option" value="' + cost.cost[0].value + '" data-service="' + cost.service + '" required>';
-                        result += '<label class="form-check-label">' + cost.service + ': Rp ' + cost.cost[0].value.toLocaleString('id-ID') + ' (' + cost.cost[0].etd + ' hari)</label>';
-                        result += '</div>';
-                    });
+                            let harga = Number(cost.cost || cost.value || 0); 
+                            let etd = (cost.etd || 'N/A').replace(' day', '') + ' hari';
+                            let service = cost.service || cost.name || 'N/A';
+                            let description = cost.description || 'N/A';
+
+                            result += `
+                                <div class="form-check">
+                                    <input class="form-check-input shipping-option" type="radio" name="shipping_option"
+                                        value="${harga}" data-service="${service}" id="option_${i}" required>
+                                    <label class="form-check-label" for="option_${i}">
+                                        ${service} - ${description}: Rp ${harga.toLocaleString('id-ID')} (${etd})
+                                    </label>
+                                </div>
+                            `;
+                        });
                     result += '<button type="button" class="btn btn-success mt-3" id="save-shipping">Simpan</button>';
                     $('#shipping-result').html(result);
+                    console.log("HASIL RENDER HTML:", result);
 
                     $('#save-shipping').click(function() {
                         let selectedOption = $('.shipping-option:checked');
@@ -299,7 +319,6 @@
                     $('#shipping-result').html('<p class="text-danger">Gagal mengambil data ongkir.</p>');
                 },
                 complete: function() {
-                    // Re-enable button and restore text after request completes
                     $button.prop('disabled', false).text('Cek Ongkir');
                 }
             });

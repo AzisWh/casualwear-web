@@ -212,49 +212,77 @@ class UserCheckoutController extends Controller
         return response()->json($cities);
     }
 
-    public function calculateShipping(Request $request, $id)
+    public function calculateShipping(Request $request)
     {
-        $request->validate([
-            'destination' => 'required',
-            'courier' => 'required|in:jne,pos,tiki',
-        ]);
+        try {
+            Log::info('Hit calculateShipping (new RajaOngkir API)', [
+                'user_id' => Auth::id(),
+                'request_data' => $request->all(),
+            ]);
 
-        $transaction = Transaction::where('user_id', Auth::id())->findOrFail($id);
+            $request->validate([
+                'origin' => 'required|integer',
+                'destination' => 'required|integer',
+                'weight' => 'required|integer|min:1', 
+                'courier' => 'required|string',
+                'price' => 'nullable|string|in:lowest,highest',
+            ]);
 
-        // Asumsikan kota asal adalah Jakarta Selatan (city_id: 152)
-        $origin = 152;
-        $weight = $request->jumlah * 1000; // Asumsikan 1 item = 1 kg
+            $postData = http_build_query([
+                'origin' => $request->origin,
+                'destination' => $request->destination,
+                'weight' => $request->weight,
+                'courier' => $request->courier,
+                'price' => $request->price ?? 'lowest'
+            ]);
 
-        $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, 'https://api.rajaongkir.com/starter/cost');
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_POST, true);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query([
-            'origin' => $origin,
-            'destination' => $request->destination,
-            'weight' => $weight,
-            'courier' => $request->courier,
-        ]));
-        curl_setopt($ch, CURLOPT_HTTPHEADER, [
-            'key: ' . env('RAJAONGKIR_API_KEY'),
-            'Content-Type: application/x-www-form-urlencoded',
-        ]);
+            $ch = curl_init();
+            curl_setopt_array($ch, [
+                CURLOPT_URL => 'https://rajaongkir.komerce.id/api/v1/calculate/domestic-cost',
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_POST => true,
+                CURLOPT_POSTFIELDS => $postData,
+                CURLOPT_HTTPHEADER => [
+                    'key: ' . env('KOMERCE_API_KEY'),
+                    'Content-Type: application/x-www-form-urlencoded'
+                ],
+            ]);
 
-        $response = curl_exec($ch);
-        curl_close($ch);
+            $response = curl_exec($ch);
+            $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+            curl_close($ch);
 
-        if ($response === false) {
-            return response()->json(['error' => 'CURL Error: ' . curl_error($ch)], 500);
+            Log::info('Komerce RajaOngkir response', [
+                'http_code' => $httpCode,
+                'response' => $response
+            ]);
+
+            if (!$response) {
+                return response()->json(['error' => 'CURL error or empty response'], 500);
+            }
+
+            $decoded = json_decode($response, true);
+
+            if ($httpCode === 200 && isset($decoded['data'])) {
+                return response()->json($decoded['data']);
+            } else {
+                return response()->json([
+                    'error' => 'API call failed',
+                    'details' => $decoded
+                ], $httpCode);
+            }
+        } catch (\Exception $e) {
+            Log::error('Error in calculateShipping:', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            return response()->json([
+                'error' => 'Server error',
+                'message' => $e->getMessage()
+            ], 500);
         }
-
-        $data = json_decode($response, true);
-        if (isset($data['rajaongkir']['status']['code']) && $data['rajaongkir']['status']['code'] == 200) {
-            $costs = $data['rajaongkir']['results'][0]['costs'];
-            return response()->json($costs);
-        }
-
-        return response()->json(['error' => 'Failed to fetch shipping cost'], 500);
     }
+
     
     public function saveShipping(Request $request, $id)
     {
