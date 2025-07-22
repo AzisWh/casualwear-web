@@ -23,7 +23,6 @@
                         @endfor
                     </select>
                 </div>
-        
                 <div class="col-md-3">
                     <label for="tahun">Tahun</label>
                     <select name="tahun" id="tahun" class="form-control">
@@ -35,8 +34,16 @@
                         @endfor
                     </select>
                 </div>
-        
-                <div class="col-md-3 align-self-end">
+                <div class="col-md-3">
+                    <label for="filter">Filter Mingguan</label>
+                    <select name="filter" id="filter" class="form-control">
+                        <option value="">-- Pilih Filter --</option>
+                        <option value="this_week" {{ request('filter') == 'this_week' ? 'selected' : '' }}>Minggu Ini</option>
+                    </select>
+                </div>
+            </div>
+            <div class="row mt-3">
+                <div class="col-md-12">
                     <button type="submit" class="btn btn-primary">Filter</button>
                     <a href="{{ route('admin.transactions.index') }}" class="btn btn-secondary">Reset</a>
                 </div>

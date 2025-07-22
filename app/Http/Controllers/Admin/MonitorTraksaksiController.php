@@ -15,19 +15,22 @@ class MonitorTraksaksiController extends Controller
     {
         $filterdata = Transaction::with(['user', 'sepatu', 'voucher']);
 
+        // filter tanggal
         if ($request->filled('tanggal')) {
             $tanggal = Carbon::parse($request->tanggal)->startOfDay();
             $filterdata->whereDate('created_at', $tanggal);
+        } 
+        // bulan n taun
+        elseif ($request->filled('bulan') || $request->filled('tahun')) {
+            if ($request->filled('bulan')) {
+                $filterdata->whereMonth('created_at', $request->bulan);
+            }
+            if ($request->filled('tahun')) {
+                $filterdata->whereYear('created_at', $request->tahun);
+            }
         }
-
-        // tgl
-        if ($request->filled('bulan') && $request->filled('tahun')) {
-            $filterdata->whereMonth('created_at', $request->bulan)
-                  ->whereYear('created_at', $request->tahun);
-        }
-    
-        // Optional: jika kamu ingin tetap bisa filter "minggu ini"
-        if ($request->filter === 'this_week') {
+        // minggu ini
+        elseif ($request->filled('filter') && $request->filter === 'this_week') {
             $filterdata->whereBetween('created_at', [
                 Carbon::now()->startOfWeek(Carbon::MONDAY),
                 Carbon::now()->endOfWeek(Carbon::SUNDAY),
