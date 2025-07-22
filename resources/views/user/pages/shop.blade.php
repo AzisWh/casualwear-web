@@ -4,26 +4,34 @@
 
 @section('content')
 <div class="bg-light ">
-  <div class="container pt-5">
-    <form method="GET" action="{{ route('user.home') }}" class="mb-4">
-      <div class="row">
-        <div class="col-md-6">
-          <select name="kategori" class="form-select" onchange="this.form.submit()">
-            <option value="">-- Semua Kategori --</option>
-            @foreach ($dataKategori as $kategori)
-              <option value="{{ $kategori->id }}" {{ request('kategori') == $kategori->id ? 'selected' : '' }}>
-                {{ $kategori->nama_kategori }}
-              </option>
-            @endforeach
-          </select>
+  <div class="container py-4">
+      <form method="GET" action="{{ route('user.shop') }}" class="mb-4">
+        <div class="row">
+          <div class="col-md-6">
+            <select name="kategori" class="form-select" onchange="this.form.submit()">
+              <option value="">-- Semua Kategori --</option>
+              @foreach ($dataKategori as $kategori)
+                <option value="{{ $kategori->id }}" {{ request('kategori') == $kategori->id ? 'selected' : '' }}>
+                  {{ $kategori->nama_kategori }}
+                </option>
+              @endforeach
+            </select>
+          </div>
+          <div class="col-md-6 mt-2 mt-md-0">
+            <select name="filterfavorit" class="form-select" onchange="this.form.submit()">
+                <option value="">-- Filter Pembelian --</option>
+                <option value="sering" {{ $filterfavorit === 'sering' ? 'selected' : '' }}>Paling Sering Dibeli</option>
+                <option value="jarang" {{ $filterfavorit === 'jarang' ? 'selected' : '' }}>Paling Jarang Dibeli</option>
+            </select>
+          </div>
         </div>
-      </div>
-    </form>
+      </form>
+  </div>
 </div>
 
 <section class="py-3">
     <div class="container">
-      <div class="py-8 bg-light">
+      <div class="py-8 ">
         <div class="container">
           <div class="row mb-8 justify-content-center">
             <div class="col-lg-8 col-md-12 col-12 text-center">

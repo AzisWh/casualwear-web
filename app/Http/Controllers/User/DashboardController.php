@@ -7,6 +7,7 @@ use App\Models\KategoriModel;
 use App\Models\SepatuModel;
 use App\Models\Transaction;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller
 {
@@ -34,10 +35,36 @@ class DashboardController extends Controller
     public function shop(Request $request)
     {
         $kategoriId = $request->query('kategori');
-        $dataSepatu = SepatuModel::when($kategoriId, function ($query, $kategoriId) {
-            return $query->where('id_kat', $kategoriId);
-        })->get();
+        $filterfavorit = $request->query('filterfavorit');
+        $popularSepatuIds = [];
+        
+        if ($filterfavorit === 'sering' || $filterfavorit === 'jarang') {
+            $query = DB::table('transaction')
+                ->select('sepatu_id', DB::raw('COUNT(*) as total'))
+                ->where('status', 'success')
+                ->groupBy('sepatu_id')
+                ->orderBy('total', $filterfavorit === 'sering' ? 'DESC' : 'ASC');
+    
+            if ($filterfavorit === 'sering') {
+                $query->havingRaw('COUNT(*) >= 5');
+            } else {
+                $query->havingRaw('COUNT(*) < 5');
+            }
+            
+            $popularSepatuIds = $query->pluck('sepatu_id')->toArray();
+        }
+    
+        $dataSepatu = SepatuModel::query()
+            ->when($kategoriId, function ($query, $kategoriId) {
+                return $query->where('id_kat', $kategoriId);
+            })
+            ->when(!empty($popularSepatuIds), function ($query) use ($popularSepatuIds) {
+                return $query->whereIn('id', $popularSepatuIds);
+            })
+            ->get();
+        
         $dataKategori = KategoriModel::all();
-        return view('user.pages.shop', compact('dataSepatu', 'dataKategori','kategoriId'));
+        
+        return view('user.pages.shop', compact('dataSepatu', 'dataKategori', 'kategoriId', 'filterfavorit'));
     }
 }

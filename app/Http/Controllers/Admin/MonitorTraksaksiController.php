@@ -5,14 +5,37 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\CancelRequest;
 use App\Models\Transaction;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use RealRashid\SweetAlert\Facades\Alert;
 
 class MonitorTraksaksiController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $transactions = Transaction::with(['user', 'sepatu', 'voucher'])->get();
+        $filterdata = Transaction::with(['user', 'sepatu', 'voucher']);
+
+        if ($request->filled('tanggal')) {
+            $tanggal = Carbon::parse($request->tanggal)->startOfDay();
+            $filterdata->whereDate('created_at', $tanggal);
+        }
+
+        // tgl
+        if ($request->filled('bulan') && $request->filled('tahun')) {
+            $filterdata->whereMonth('created_at', $request->bulan)
+                  ->whereYear('created_at', $request->tahun);
+        }
+    
+        // Optional: jika kamu ingin tetap bisa filter "minggu ini"
+        if ($request->filter === 'this_week') {
+            $filterdata->whereBetween('created_at', [
+                Carbon::now()->startOfWeek(Carbon::MONDAY),
+                Carbon::now()->endOfWeek(Carbon::SUNDAY),
+            ]);
+        }
+
+        $transactions = $filterdata->paginate(5)->appends($request->query());
+        
         return view('admin.transaksi.transaksi', compact('transactions'));
     }
 

@@ -6,6 +6,43 @@
     <div class="container">
         <h2>Monitor Transaksi</h2>
 
+        <form method="GET" action="{{ route('admin.transactions.index') }}" class="mb-4">
+            <div class="row">
+                <div class="col-md-3">
+                    <label for="tanggal">Tanggal Pembelian</label>
+                    <input type="date" name="tanggal" id="tanggal" class="form-control" value="{{ request('tanggal') }}">
+                </div>
+                <div class="col-md-3">
+                    <label for="bulan">Bulan</label>
+                    <select name="bulan" id="bulan" class="form-control">
+                        <option value="">-- Pilih Bulan --</option>
+                        @for ($m = 1; $m <= 12; $m++)
+                            <option value="{{ $m }}" {{ request('bulan') == $m ? 'selected' : '' }}>
+                                {{ \Carbon\Carbon::create()->month($m)->locale('id')->translatedFormat('F') }}
+                            </option>
+                        @endfor
+                    </select>
+                </div>
+        
+                <div class="col-md-3">
+                    <label for="tahun">Tahun</label>
+                    <select name="tahun" id="tahun" class="form-control">
+                        <option value="">-- Pilih Tahun --</option>
+                        @for ($y = now()->year; $y >= 2020; $y--)
+                            <option value="{{ $y }}" {{ request('tahun') == $y ? 'selected' : '' }}>
+                                {{ $y }}
+                            </option>
+                        @endfor
+                    </select>
+                </div>
+        
+                <div class="col-md-3 align-self-end">
+                    <button type="submit" class="btn btn-primary">Filter</button>
+                    <a href="{{ route('admin.transactions.index') }}" class="btn btn-secondary">Reset</a>
+                </div>
+            </div>
+        </form>
+
         <div class="table-responsive">
             <table class="table table-striped">
                 <thead>
@@ -14,6 +51,7 @@
                         <th>User</th>
                         <th>Sepatu</th>
                         <th>Jumlah</th>
+                        <th>Tanggal Pembelian</th>
                         <th>Total Harga</th>
                         <th>Status</th>
                         <th>Shipping Status</th>
@@ -29,6 +67,7 @@
                             <td>{{ $transaction->user->nama_depan ?? 'N/A' }} {{ $transaction->user->nama_belakang ?? '' }}</td>
                             <td>{{ $transaction->sepatu->title ?? 'N/A' }}</td>
                             <td>{{ $transaction->jumlah }}</td>
+                            <td>{{ $transaction->created_at->format('d M Y H:i') }} WIB</td>
                             <td>Rp {{ number_format($transaction->total_harga, 0, ',', '.') }}</td>
                             <td>
                                 <span class="badge bg-{{ $transaction->status === 'pending' ? 'warning' : ($transaction->status === 'success' ? 'success' : ($transaction->status === 'failed' ? 'danger' : 'secondary')) }}">
@@ -211,6 +250,9 @@
                     @endforeach
                 </tbody>
             </table>
+            <div class="mt-3">
+                {{ $transactions->links('pagination::bootstrap-5') }}
+            </div>
         </div>
     </div>
 
