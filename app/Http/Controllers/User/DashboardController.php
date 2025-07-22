@@ -46,9 +46,9 @@ class DashboardController extends Controller
                 ->orderBy('total', $filterfavorit === 'sering' ? 'DESC' : 'ASC');
     
             if ($filterfavorit === 'sering') {
-                $query->havingRaw('COUNT(*) >= 5');
+                $query->havingRaw('COUNT(*) >= 3');
             } else {
-                $query->havingRaw('COUNT(*) < 5');
+                $query->havingRaw('COUNT(*) < 3');
             }
             
             $popularSepatuIds = $query->pluck('sepatu_id')->toArray();
